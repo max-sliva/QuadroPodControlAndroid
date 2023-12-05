@@ -1,5 +1,6 @@
 package com.example.quadropodcontrol
 
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -29,7 +30,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.blue
 import androidx.core.graphics.get
 import androidx.core.graphics.green
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
             val bodyWidth = quadroPodBody.width
             val bodyHeight = quadroPodBody.height
             println("bodyWidth = $bodyWidth  bodyHeight=$bodyHeight")
+//            println("screen width = ${size.width.toInt()}, size.height.toInt()")
             val image = quadroPodBody
             val pixMap = image
 //            val fromImage = image[100, 100].
@@ -58,7 +60,7 @@ class MainActivity : ComponentActivity() {
             var rotatePoints = arrayOf<Pair<Int, Int>>()
             for (x in 11 until image.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
                 for (y in 11 until image.height) {
-                    if (pixMap[x, y].green in (200..255)) { //todo проверить, ск-ко возвращает
+                    if (pixMap[x, y].green in (178..255)) { //todo проверить, ск-ко возвращает
 //                println("found green at $x $y")
                         rotatePoints = rotatePoints.plus(Pair(x, y))
                     }
@@ -71,7 +73,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 //                    Greeting("Android")
-                    App(quadroPodBody.asImageBitmap(), rotatePoints, loadArms())
+                    val res = LocalContext.current.resources
+                    App(quadroPodBody.asImageBitmap(), rotatePoints, loadArms(res))
                 }
             }
         }
@@ -88,6 +91,11 @@ class MainActivity : ComponentActivity() {
 //    var text by remember { mutableStateOf("Hello, World!") }
         //массив с мапом: начальные точки, оффсеты и точки поворота в виде пар значений
 //    todo вставить в него все оффсеты, нач.точки и точки поворота
+
+//        val imageWidth = quadroPodBody.width * LocalDensity.current.density
+//        val imageHeight = quadroPodBody.width * LocalDensity.current.density
+
+        println("rotatePoints = ${rotatePoints.toList()}")
         var arrayForGettingAngles = arrayOf<HashMap<String, Pair<Float, Float>>>()
         var offsetXArray = remember { mutableStateListOf<Float>() }
         var offsetYArray = remember { mutableStateListOf<Float>() }
@@ -201,9 +209,12 @@ class MainActivity : ComponentActivity() {
             ) {
 //                val canvasQuadrantSize = size / 2F
                 try {
+                    println("screen width = ${size.width.toInt()}, screen height = ${size.height.toInt()}")
+
                     drawImage(
                         image = quadroPodBody,
-                        topLeft = Offset(0F, 0F)
+//                        topLeft = Offset(0F, 0F),
+                        dstSize = IntSize(size.width.toInt(), size.height.toInt())
                     )
                     val arm1 = arms[0]
                     armRotate(
@@ -218,48 +229,48 @@ class MainActivity : ComponentActivity() {
                         rotatePoints[0]
                     )
 //                    armRotate(0F,0F,arm1, startPointX, startPointY, offsetX, offsetY, rotatePoints)
-                    val arm2 = arms[1]
-//                    val x0ForArm2 = rotatePoints[1].first
-//                    val y0ForArm2 = rotatePoints[1].second-rotatePoints[0].second
-                    val y0ForArm2 = rotatePoints[1].second - 80 //позиционируем вторую лапу
-                    armRotate(
-                        2,
-                        0F,
-                        y0ForArm2.toFloat(),
-                        arm2,
-                        startPointXArray[1],
-                        startPointYArray[1],
-                        offsetXArray[1],
-                        offsetYArray[1],
-                        rotatePoints[1]
-                    )
-                    val arm3 = arms[2]
-                    val x0ForArm3 = rotatePoints[2].first - 40 //позиционируем третью лапу
-                    armRotate(
-                        3,
-                        x0ForArm3.toFloat(),
-                        7F,
-                        arm3,
-                        startPointXArray[2],
-                        startPointYArray[2],
-                        offsetXArray[2],
-                        offsetYArray[2],
-                        rotatePoints[2]
-                    )
-                    val arm4 = arms[3]
-                    val x0ForArm4 = rotatePoints[3].first - 40
-                    val y0ForArm4 = rotatePoints[3].second - 55 //позиционируем четвертую лапу
-                    armRotate(
-                        4,
-                        x0ForArm4.toFloat(),
-                        y0ForArm4.toFloat(),
-                        arm4,
-                        startPointXArray[3],
-                        startPointYArray[3],
-                        offsetXArray[3],
-                        offsetYArray[3],
-                        rotatePoints[3]
-                    )
+//                    val arm2 = arms[1]
+////                    val x0ForArm2 = rotatePoints[1].first
+////                    val y0ForArm2 = rotatePoints[1].second-rotatePoints[0].second
+//                    val y0ForArm2 = rotatePoints[1].second - 80 //позиционируем вторую лапу
+//                    armRotate(
+//                        2,
+//                        0F,
+//                        y0ForArm2.toFloat(),
+//                        arm2,
+//                        startPointXArray[1],
+//                        startPointYArray[1],
+//                        offsetXArray[1],
+//                        offsetYArray[1],
+//                        rotatePoints[1]
+//                    )
+//                    val arm3 = arms[2]
+//                    val x0ForArm3 = rotatePoints[2].first - 40 //позиционируем третью лапу
+//                    armRotate(
+//                        3,
+//                        x0ForArm3.toFloat(),
+//                        7F,
+//                        arm3,
+//                        startPointXArray[2],
+//                        startPointYArray[2],
+//                        offsetXArray[2],
+//                        offsetYArray[2],
+//                        rotatePoints[2]
+//                    )
+//                    val arm4 = arms[3]
+//                    val x0ForArm4 = rotatePoints[3].first - 40
+//                    val y0ForArm4 = rotatePoints[3].second - 55 //позиционируем четвертую лапу
+//                    armRotate(
+//                        4,
+//                        x0ForArm4.toFloat(),
+//                        y0ForArm4.toFloat(),
+//                        arm4,
+//                        startPointXArray[3],
+//                        startPointYArray[3],
+//                        offsetXArray[3],
+//                        offsetYArray[3],
+//                        rotatePoints[3]
+//                    )
                 } catch (e: NullPointerException) {
 //                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
                     println("No image")
@@ -300,7 +311,7 @@ class MainActivity : ComponentActivity() {
         var degs by remember { mutableStateOf(0f) }
         degs = degsInLeg
 
-        AlertDialog(
+        AlertDialog( //todo переделать в отдельное активити
             onDismissRequest = { //действия при закрытии окна
                 openDialog.value = false
                 onUpdate(degs)
@@ -313,16 +324,10 @@ class MainActivity : ComponentActivity() {
                     LocalContext.current.resources,
                     R.drawable.back
                 )
-                val resID= //todo разобраться, почему такой способ возвращает null
-                         //если не получится, загружать в самом начале в массив и здесь получать по нужному индексу
-                    resources.getIdentifier("leg${curArm.toInt() + 1}_body_.PNG", "drawable",
-                        packageName
-                    )
+
                 var legBody: Bitmap? = null
-                if (resID!=0) legBody = BitmapFactory.decodeResource(
-                    LocalContext.current.resources,
-                    resID
-                )
+                val res = LocalContext.current.resources
+                legBody = curLegBody(curArm.toInt(), res)
                 val pixMap = legBody
                 var rotatePoint: Pair<Int, Int>? = null
                 for (x in 11 until legBody!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
@@ -338,15 +343,7 @@ class MainActivity : ComponentActivity() {
                 var startPointX by remember { mutableStateOf(0f) }
                 var startPointY by remember { mutableStateOf(0f) }
 
-                val resID_leg=
-                    resources.getIdentifier("leg${curArm.toInt() + 1}.PNG", "drawable",
-                        packageName
-                    )
-                var leg: Bitmap? = null
-                if (resID_leg!=0) legBody = BitmapFactory.decodeResource(
-                    LocalContext.current.resources,
-                    resID_leg
-                )
+                var leg: Bitmap? = curLeg(curArm.toInt(), res)
 
                 Canvas(
                     modifier = Modifier
@@ -383,18 +380,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                 ) {
-//                    val resID=
-//                        resources.getIdentifier("leg${curArm.toInt() + 1}.PNG", "drawable",
-//                            packageName
-//                        )
-//                    var leg: Bitmap? = null
-//                    if (resID!=0) legBody = BitmapFactory.decodeResource(
-//                        LocalContext.current.resources,
-//                        resID
-//                    )
-//                    val leg =
-//                        useResource("leg${curArm.toInt() + 1}.PNG") { loadImageBitmap(it) }//сама рука
-//                println("leg image width = ${leg.width}")
                     var rotatePointLeg: Pair<Int, Int>? = null
                     val pixMapForLeg = leg
                     for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
@@ -447,6 +432,54 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+//    @Composable
+    private fun curLeg(legNumber: Int, res: Resources): Bitmap? {
+        var leg: Bitmap? = null
+        when (legNumber){
+            0-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg1
+            )
+            1-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg2
+            )
+            2-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg3
+            )
+            3-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg4
+            )
+        }
+        return leg
+    }
+
+//    @Composable
+    private fun curLegBody(legNumber: Int, res: Resources): Bitmap? {
+        var leg: Bitmap? = null
+        when (legNumber){
+            0-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg1_body_
+            )
+            1-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg2_body_
+            )
+            2-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg3_body_
+            )
+            3-> leg = BitmapFactory.decodeResource(
+                res,
+                R.drawable.leg4_body_
+            )
+        }
+        return leg
+    }
+
     fun angle(
         arm1RotatePointX: Float,
         arm1RotatePointY: Float,
@@ -470,59 +503,29 @@ class MainActivity : ComponentActivity() {
         return degs
     }
 
-    @Composable
-    fun Greeting(name: String, modifier: Modifier = Modifier) {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun GreetingPreview() {
-        QuadroPodControlTheme {
-            Greeting("Android")
-        }
-    }
-
-    @Composable
-    fun loadArms(): Array<ImageBitmap> { //для загрузки изображений ног робота (плечи)
+    fun loadArms(res: Resources): Array<ImageBitmap> { //для загрузки изображений ног робота (плечи)
         var armImagesArray = arrayOf<ImageBitmap>()
         var arm = BitmapFactory.decodeResource(
-            LocalContext.current.resources,
+            res,
             R.drawable.arm1
         )
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
         arm = BitmapFactory.decodeResource(
-            LocalContext.current.resources,
+            res,
             R.drawable.arm2
         )
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
         arm = BitmapFactory.decodeResource(
-            LocalContext.current.resources,
+            res,
             R.drawable.arm3
         )
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
         arm = BitmapFactory.decodeResource(
-            LocalContext.current.resources,
+            res,
             R.drawable.arm4
         )
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
-//        for (i in 0..3) {
-//            val armID = resources.getIdentifier("arm${i + 1}.PNG", "drawable", packageName)
-////            var leg: Bitmap? = null
-//            if (armID!=0)
-////            val arm = useResource("arm${i + 1}.PNG") { loadImageBitmap(it) }
-//                armImagesArray = armImagesArray.plus(BitmapFactory.decodeResource(
-//                    LocalContext.current.resources,
-//                    armID
-//                ).asImageBitmap())
-//            else println("arm$i not found")
-//        }
-//    armImagesArray.forEach {
-//        println("arm = ${it.height}")
-//    }
+
         return armImagesArray
     }
 }
