@@ -1,5 +1,12 @@
 package com.example.quadropodcontrol
 
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
+import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -7,16 +14,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+//import androidx.compose.material.DropdownMenu
+//import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -26,11 +43,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import androidx.core.app.ActivityCompat
 import androidx.core.graphics.blue
 import androidx.core.graphics.get
 import androidx.core.graphics.green
@@ -94,7 +113,8 @@ class MainActivity : ComponentActivity() {
 
 //        val imageWidth = quadroPodBody.width * LocalDensity.current.density
 //        val imageHeight = quadroPodBody.width * LocalDensity.current.density
-
+        var bltList = getBluetoothAvailable(LocalContext.current)
+//        println("")
         println("rotatePoints = ${rotatePoints.toList()}")
         var arrayForGettingAngles = arrayOf<HashMap<String, Pair<Float, Float>>>()
         var offsetXArray = remember { mutableStateListOf<Float>() }
@@ -144,6 +164,13 @@ class MainActivity : ComponentActivity() {
 //                legStartPointYArray[curArm] = y
 //                println("degsForLegs = $x ")
             } //для вызова окна с нужной leg
+            DropdownDemo(bltList){ x-> //лямбда для ф-ии обратного вызова
+//                curComPort=x
+//                if (curComPort!=""){
+//                    curSerialPort = SerialPort(curComPort)
+//                    curSerialPort.openPort()
+//                }
+            }
             Canvas(modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
@@ -280,6 +307,135 @@ class MainActivity : ComponentActivity() {
 //        }
     }
 
+    @Composable
+    private fun getBluetoothAvailable(context: Context): List<String> {
+        println("---!!!  Started bluetooth work!!!-----")
+        var bltList = listOf<String>()
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
+        if (!bluetoothAdapter.isEnabled) {
+            println("Bluetooth is not enabled")
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            println("Should Requesting Bluetooth permission")
+            return emptyList()
+        }
+
+        var connectedBluetoothDevices by remember {
+            mutableStateOf(
+                ConnectedBluetoothDevices(
+                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
+                )
+            )
+        }
+
+        var currentBluetoothProfile: BluetoothProfile? = null
+        var isRefreshing by remember { mutableStateOf(false) }
+
+        LaunchedEffect(bluetoothAdapter, currentBluetoothProfile, isRefreshing) {
+            if (isRefreshing) {
+                bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
+                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                        currentBluetoothProfile = proxy
+                        connectedBluetoothDevices = handleBluetoothService(profile, proxy)
+                    }
+
+                    override fun onServiceDisconnected(profile: Int) {
+                        if (profile == BluetoothProfile.A2DP) {
+                            println("A2DP devices disconnected")
+                        }
+                    }
+                }, BluetoothProfile.A2DP)
+            }
+            isRefreshing = false
+        }
+
+
+        //  bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED
+        bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                connectedBluetoothDevices = handleBluetoothService(profile, proxy)
+            }
+
+            override fun onServiceDisconnected(profile: Int) {
+                if (profile == BluetoothProfile.A2DP) {
+                   println("A2DP devices disconnected")
+                }
+            }
+        }, BluetoothProfile.A2DP)
+
+//        Button(onClick = { isRefreshing = true }) {
+//            Text("Refresh BT")
+//        }
+
+        // currently we are relating only on A2DP devices
+        // but we could use them later with a little change if needed
+        println("----- !!  device count =  ${connectedBluetoothDevices.a2dpDevices.size}!!!------------")
+        connectedBluetoothDevices.a2dpDevices.forEach {
+            bltList = bltList.plus(it.name)
+            println("device = ${it.name}")
+        }
+        return bltList
+    }
+
+    fun handleBluetoothService(profile: Int, proxy: BluetoothProfile): ConnectedBluetoothDevices {
+        val states = intArrayOf(
+            BluetoothProfile.STATE_CONNECTED,
+//        BluetoothProfile.STATE_CONNECTING,
+//        BluetoothProfile.STATE_DISCONNECTED,
+//        BluetoothProfile.STATE_DISCONNECTING
+        )
+
+        val ad2dpDevices = mutableListOf<BluetoothDevice>()
+        val gattDevices = mutableListOf<BluetoothDevice>()
+        val gattServerDevices = mutableListOf<BluetoothDevice>()
+        val headsetDevices = mutableListOf<BluetoothDevice>()
+        val sapDevices = mutableListOf<BluetoothDevice>()
+
+        when (profile) {
+            BluetoothProfile.A2DP -> ad2dpDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+            BluetoothProfile.GATT -> gattDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+            BluetoothProfile.GATT_SERVER -> gattServerDevices.addAll(
+                proxy.getDevicesMatchingConnectionStates(
+                    states
+                )
+            )
+
+            BluetoothProfile.HEADSET -> headsetDevices.addAll(
+                proxy.getDevicesMatchingConnectionStates(
+                    states
+                )
+            )
+
+            BluetoothProfile.SAP -> sapDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+        }
+        return ConnectedBluetoothDevices(
+            ad2dpDevices,
+            gattDevices,
+            gattServerDevices,
+            headsetDevices,
+            sapDevices
+        )
+//    to get the connected devices of selected profile
+//    if (profile == BluetoothProfile.A2DP) {
+//        val a2dp = proxy as BluetoothProfile
+//        val devices = a2dp.connectedDevices
+//        Log.i("MainActivity", "A2DP devices: $devices")
+//    }
+    }
+
+    data class ConnectedBluetoothDevices(
+        val a2dpDevices: List<BluetoothDevice>,
+        val gattDevices: List<BluetoothDevice>,
+        val gattServerDevices: List<BluetoothDevice>,
+        val headsetDevices: List<BluetoothDevice>,
+        val sapDevices: List<BluetoothDevice>,
+    )
     private fun getArmNumber(
         startPointX: Float,
         quadroPodBody: ImageBitmap,
@@ -527,5 +683,66 @@ class MainActivity : ComponentActivity() {
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
 
         return armImagesArray
+    }
+}
+
+@Composable
+fun DropdownDemo(itemsInitial: List<String>, onUpdate: (x: String) -> Unit) { //комбобокс для выбора компорта для подключения к Arduino
+    var expanded by remember { mutableStateOf(false) }
+//    val items = listOf("com1", "com2", "com3")
+//    val disabledValue = "B"
+    var items = remember { mutableStateListOf<String>() }
+    itemsInitial.forEach {
+        if (!items.contains(it))items.add(it)
+    }
+    var selectedIndex by remember { mutableStateOf(-1) }
+    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+        Text( //заголовок комбобокса
+            if (selectedIndex<0) "Выберите порт: ▼" //если еще ничего не выбрано
+            else items[selectedIndex], //если выбрано
+            modifier = Modifier.clickable(onClick = { //при нажатии на текст раскрываем комбобокс
+//                val tempPortList = SerialPortList.getPortNames().toList() //получаем активные порты
+//                println("SerialPortList = $tempPortList")
+//                tempPortList.forEach {//добавляем новые порты к списку
+//                    if (!items.contains(it))items.add(it)
+//                }
+//                items.forEach{//убираем отключенные порты
+//                    if (!tempPortList.contains(it)) {
+////                        println("$it not in SerialPortList")
+//                        items.remove(it)
+//                    }
+//                }
+//                val bltList =
+                expanded = true
+            })
+        )
+        DropdownMenu( //сам выпадающий список для комбобокса
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+        ) {
+            items.forEachIndexed { index, s -> //заполняем элементы выпадающего списка
+                DropdownMenuItem(
+//                   Text(text = s),
+                    text = {Text(text = s )},
+                    onClick = { //обработка нажатия на порт
+                        selectedIndex = index
+                        expanded = false
+                        onUpdate(s)
+                        println("selected = $s")
+                    }
+                )
+//                {
+////                    val disabledText = if (s == disabledValue) {
+////                        " (Disabled)"
+////                    } else {
+////                        ""
+////                    }
+//                    Text(text = s )
+//                }
+            }
+        }
     }
 }
