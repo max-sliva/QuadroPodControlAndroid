@@ -113,7 +113,8 @@ class MainActivity : ComponentActivity() {
 
 //        val imageWidth = quadroPodBody.width * LocalDensity.current.density
 //        val imageHeight = quadroPodBody.width * LocalDensity.current.density
-        var bltList = getBluetoothAvailable(LocalContext.current)
+        var bltList = getBluetoothDevices(LocalContext.current)
+//        var bltList = getBluetoothAvailable(LocalContext.current)
 //        println("")
         println("rotatePoints = ${rotatePoints.toList()}")
         var arrayForGettingAngles = arrayOf<HashMap<String, Pair<Float, Float>>>()
@@ -307,127 +308,153 @@ class MainActivity : ComponentActivity() {
 //        }
     }
 
-    @Composable
-    private fun getBluetoothAvailable(context: Context): List<String> {
-        println("---!!!  Started bluetooth work!!!-----")
+//    @Composable
+//    private fun getBluetoothAvailable(context: Context): List<String> {
+//        println("---!!!  Started bluetooth work!!!-----")
+//        var bltList = listOf<String>()
+//        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+//        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
+//        if (!bluetoothAdapter.isEnabled) {
+//            println("Bluetooth is not enabled")
+//        }
+//
+//        if (ActivityCompat.checkSelfPermission(
+//                context,
+//                Manifest.permission.BLUETOOTH_CONNECT
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            println("Should Requesting Bluetooth permission")
+//            return emptyList()
+//        }
+//
+//        var connectedBluetoothDevices by remember {
+//            mutableStateOf(
+//                ConnectedBluetoothDevices(
+//                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
+//                )
+//            )
+//        }
+//
+//        var currentBluetoothProfile: BluetoothProfile? = null
+//        var isRefreshing by remember { mutableStateOf(false) }
+//
+//        LaunchedEffect(bluetoothAdapter, currentBluetoothProfile, isRefreshing) {
+//            if (isRefreshing) {
+//                bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
+//                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+//                        currentBluetoothProfile = proxy
+//                        connectedBluetoothDevices = handleBluetoothService(profile, proxy)
+//                    }
+//
+//                    override fun onServiceDisconnected(profile: Int) {
+//                        if (profile == BluetoothProfile.A2DP) {
+//                            println("A2DP devices disconnected")
+//                        }
+//                    }
+//                }, BluetoothProfile.A2DP)
+//            }
+//            isRefreshing = false
+//        }
+//
+//
+//        //  bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED
+//        bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
+//            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+//                connectedBluetoothDevices = handleBluetoothService(profile, proxy)
+//            }
+//
+//            override fun onServiceDisconnected(profile: Int) {
+//                if (profile == BluetoothProfile.A2DP) {
+//                   println("A2DP devices disconnected")
+//                }
+//            }
+//        }, BluetoothProfile.A2DP)
+//
+////        Button(onClick = { isRefreshing = true }) {
+////            Text("Refresh BT")
+////        }
+//
+//        // currently we are relating only on A2DP devices
+//        // but we could use them later with a little change if needed
+//        println("----- !!  device count =  ${connectedBluetoothDevices.a2dpDevices.size}!!!------------")
+//        connectedBluetoothDevices.a2dpDevices.forEach {
+//            bltList = bltList.plus(it.name)
+//            println("device = ${it.name}!")
+//        }
+//        return bltList
+//    }
+
+    fun getBluetoothDevices(context: Context): List<String> {
         var bltList = listOf<String>()
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
         if (!bluetoothAdapter.isEnabled) {
             println("Bluetooth is not enabled")
         }
-
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.BLUETOOTH_CONNECT
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             println("Should Requesting Bluetooth permission")
-            return emptyList()
+//            return emptyList()
         }
-
-        var connectedBluetoothDevices by remember {
-            mutableStateOf(
-                ConnectedBluetoothDevices(
-                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
-                )
-            )
-        }
-
-        var currentBluetoothProfile: BluetoothProfile? = null
-        var isRefreshing by remember { mutableStateOf(false) }
-
-        LaunchedEffect(bluetoothAdapter, currentBluetoothProfile, isRefreshing) {
-            if (isRefreshing) {
-                bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
-                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-                        currentBluetoothProfile = proxy
-                        connectedBluetoothDevices = handleBluetoothService(profile, proxy)
-                    }
-
-                    override fun onServiceDisconnected(profile: Int) {
-                        if (profile == BluetoothProfile.A2DP) {
-                            println("A2DP devices disconnected")
-                        }
-                    }
-                }, BluetoothProfile.A2DP)
-            }
-            isRefreshing = false
-        }
-
-
-        //  bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED
-        bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
-            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-                connectedBluetoothDevices = handleBluetoothService(profile, proxy)
-            }
-
-            override fun onServiceDisconnected(profile: Int) {
-                if (profile == BluetoothProfile.A2DP) {
-                   println("A2DP devices disconnected")
-                }
-            }
-        }, BluetoothProfile.A2DP)
-
-//        Button(onClick = { isRefreshing = true }) {
-//            Text("Refresh BT")
-//        }
-
-        // currently we are relating only on A2DP devices
-        // but we could use them later with a little change if needed
-        println("----- !!  device count =  ${connectedBluetoothDevices.a2dpDevices.size}!!!------------")
-        connectedBluetoothDevices.a2dpDevices.forEach {
-            bltList = bltList.plus(it.name)
-            println("device = ${it.name}")
+        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
+        println("---!! set of devices size = ${pairedDevices?.size} !!!-----")
+        pairedDevices?.forEach { device ->
+            val deviceName = device.name
+            val deviceHardwareAddress = device.address // MAC address
+            println("blt device = $deviceName")
+            bltList = bltList.plus(deviceName)
         }
         return bltList
     }
 
-    fun handleBluetoothService(profile: Int, proxy: BluetoothProfile): ConnectedBluetoothDevices {
-        val states = intArrayOf(
-            BluetoothProfile.STATE_CONNECTED,
-//        BluetoothProfile.STATE_CONNECTING,
-//        BluetoothProfile.STATE_DISCONNECTED,
-//        BluetoothProfile.STATE_DISCONNECTING
-        )
-
-        val ad2dpDevices = mutableListOf<BluetoothDevice>()
-        val gattDevices = mutableListOf<BluetoothDevice>()
-        val gattServerDevices = mutableListOf<BluetoothDevice>()
-        val headsetDevices = mutableListOf<BluetoothDevice>()
-        val sapDevices = mutableListOf<BluetoothDevice>()
-
-        when (profile) {
-            BluetoothProfile.A2DP -> ad2dpDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-            BluetoothProfile.GATT -> gattDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-            BluetoothProfile.GATT_SERVER -> gattServerDevices.addAll(
-                proxy.getDevicesMatchingConnectionStates(
-                    states
-                )
-            )
-
-            BluetoothProfile.HEADSET -> headsetDevices.addAll(
-                proxy.getDevicesMatchingConnectionStates(
-                    states
-                )
-            )
-
-            BluetoothProfile.SAP -> sapDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-        }
-        return ConnectedBluetoothDevices(
-            ad2dpDevices,
-            gattDevices,
-            gattServerDevices,
-            headsetDevices,
-            sapDevices
-        )
-//    to get the connected devices of selected profile
-//    if (profile == BluetoothProfile.A2DP) {
-//        val a2dp = proxy as BluetoothProfile
-//        val devices = a2dp.connectedDevices
-//        Log.i("MainActivity", "A2DP devices: $devices")
+//    fun handleBluetoothService(profile: Int, proxy: BluetoothProfile): ConnectedBluetoothDevices {
+//        val states = intArrayOf(
+//            BluetoothProfile.STATE_CONNECTED,
+////        BluetoothProfile.STATE_CONNECTING,
+////        BluetoothProfile.STATE_DISCONNECTED,
+////        BluetoothProfile.STATE_DISCONNECTING
+//        )
+//
+//        val ad2dpDevices = mutableListOf<BluetoothDevice>()
+//        val gattDevices = mutableListOf<BluetoothDevice>()
+//        val gattServerDevices = mutableListOf<BluetoothDevice>()
+//        val headsetDevices = mutableListOf<BluetoothDevice>()
+//        val sapDevices = mutableListOf<BluetoothDevice>()
+//
+//        when (profile) {
+//            BluetoothProfile.A2DP -> ad2dpDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+//            BluetoothProfile.GATT -> gattDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+//            BluetoothProfile.GATT_SERVER -> gattServerDevices.addAll(
+//                proxy.getDevicesMatchingConnectionStates(
+//                    states
+//                )
+//            )
+//
+//            BluetoothProfile.HEADSET -> headsetDevices.addAll(
+//                proxy.getDevicesMatchingConnectionStates(
+//                    states
+//                )
+//            )
+//
+//            BluetoothProfile.SAP -> sapDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
+//        }
+//        return ConnectedBluetoothDevices(
+//            ad2dpDevices,
+//            gattDevices,
+//            gattServerDevices,
+//            headsetDevices,
+//            sapDevices
+//        )
+////    to get the connected devices of selected profile
+////    if (profile == BluetoothProfile.A2DP) {
+////        val a2dp = proxy as BluetoothProfile
+////        val devices = a2dp.connectedDevices
+////        Log.i("MainActivity", "A2DP devices: $devices")
+////    }
 //    }
-    }
 
     data class ConnectedBluetoothDevices(
         val a2dpDevices: List<BluetoothDevice>,
