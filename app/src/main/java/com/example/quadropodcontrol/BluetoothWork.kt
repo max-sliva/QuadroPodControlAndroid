@@ -70,7 +70,7 @@ class BluetoothWork(localContext: Context) {
 //        }
         return socket
     }
-    private fun sendDataToBluetoothDevice(context: Context, data: String, device: BluetoothDevice) {
+    fun sendDataToBluetoothDevice(socket: BluetoothSocket, data: String) {
         try {
             if (ActivityCompat.checkSelfPermission(
                     context,
@@ -81,15 +81,15 @@ class BluetoothWork(localContext: Context) {
 //            return emptyList()
             }
             // Get the BluetoothSocket for the device
-            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-            socket.connect()
+//            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+//            socket.connect()
             // Convert the string to bytes
             val bytes = data.toByteArray()
             // Send the bytes to the device
             val outputStream = socket.outputStream
             outputStream.write(bytes)
             // Close the socket
-            socket.close()
+//            socket.close()
         } catch (e: IOException) {
             e.printStackTrace()
         }

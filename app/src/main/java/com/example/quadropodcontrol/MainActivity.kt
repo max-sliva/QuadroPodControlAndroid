@@ -1,6 +1,7 @@
 package com.example.quadropodcontrol
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothSocket
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -50,6 +51,7 @@ import androidx.core.graphics.red
 import armRotate
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 import legRotate
+import writeArmAngleToArduino
 import kotlin.math.atan
 
 
@@ -113,11 +115,18 @@ class MainActivity : ComponentActivity() {
         Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
         var pairedDevices = remember { mutableSetOf<BluetoothDevice>() }
         pairedDevices = bltWork.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
+        var socketToDevice: BluetoothSocket? by remember { mutableStateOf(null) }
         println("blt devices = ${bltList}")
         println("rotatePoints = ${rotatePoints.toList()}")
         var curDeviceName by remember { mutableStateOf("")        }
-        var curBluetoothDevice by remember {  mutableStateOf(null)  }
+//        var curBluetoothDevice by remember {  mutableStateOf(null)  }
 
+        var degsForArms = remember { mutableStateListOf<Int>() } //массив для хранения углов для каждой arm
+        //вставляем углы для arms
+        degsForArms.add(100)
+        degsForArms.add(60)
+        degsForArms.add(80)
+        degsForArms.add(140)
         var arrayForGettingAngles = arrayOf<HashMap<String, Pair<Float, Float>>>()
         var offsetXArray = remember { mutableStateListOf<Float>() }
         var offsetYArray = remember { mutableStateListOf<Float>() }
@@ -171,7 +180,7 @@ class MainActivity : ComponentActivity() {
                 if (curDeviceName!=""){
                     val curDevice: BluetoothDevice = bltWork.getDeviceByName(curDeviceName)
                     println("curDevice = ${curDevice}")
-                    val socketToDevice = bltWork.connectToBluetoothDevice(curDevice)
+                    socketToDevice = bltWork.connectToBluetoothDevice(curDevice)!!
 //                    curSerialPort = SerialPort(curComPort)
 //                    curSerialPort.openPort()
                 }
@@ -216,6 +225,13 @@ class MainActivity : ComponentActivity() {
                         onDragEnd = {
 //                            println("angle on drag end = $degs")
 //                           angleOnDragEnd = degs
+                            val number = getArmNumber(startPointX, quadroPodBody, startPointY)
+                            if (curDeviceName != "") writeArmAngleToArduino(
+                                bltWork,
+                                socketToDevice!!,
+                                number,
+                                degsForArms[number]
+                            )
                         },
                     )
                 }
@@ -258,8 +274,9 @@ class MainActivity : ComponentActivity() {
                         startPointYArray[0],
                         offsetXArray[0],
                         offsetYArray[0],
-                        rotatePoints[0]
-                    )
+                        rotatePoints[0],
+                        degsForArms[0]
+                    ){x-> degsForArms[0]=x }
 //                    armRotate(0F,0F,arm1, startPointX, startPointY, offsetX, offsetY, rotatePoints)
 //                    val arm2 = arms[1]
 ////                    val x0ForArm2 = rotatePoints[1].first
@@ -274,8 +291,9 @@ class MainActivity : ComponentActivity() {
 //                        startPointYArray[1],
 //                        offsetXArray[1],
 //                        offsetYArray[1],
-//                        rotatePoints[1]
-//                    )
+//                        rotatePoints[1],
+//                        degsForArms[1]
+//                    ){x-> degsForArms[1]=x }
 //                    val arm3 = arms[2]
 //                    val x0ForArm3 = rotatePoints[2].first - 40 //позиционируем третью лапу
 //                    armRotate(
@@ -287,8 +305,9 @@ class MainActivity : ComponentActivity() {
 //                        startPointYArray[2],
 //                        offsetXArray[2],
 //                        offsetYArray[2],
-//                        rotatePoints[2]
-//                    )
+//                        rotatePoints[2],
+//                        degsForArms[2]
+//                    ){x-> degsForArms[2]=x }
 //                    val arm4 = arms[3]
 //                    val x0ForArm4 = rotatePoints[3].first - 40
 //                    val y0ForArm4 = rotatePoints[3].second - 55 //позиционируем четвертую лапу
@@ -301,8 +320,9 @@ class MainActivity : ComponentActivity() {
 //                        startPointYArray[3],
 //                        offsetXArray[3],
 //                        offsetYArray[3],
-//                        rotatePoints[3]
-//                    )
+//                        rotatePoints[3],
+//                        degsForArms[3]
+//                    ){x-> degsForArms[3]=x }
                 } catch (e: NullPointerException) {
 //                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
                     println("No image")
@@ -312,208 +332,13 @@ class MainActivity : ComponentActivity() {
 //        }
     }
 
-//    @Composable
-//    private fun getBluetoothAvailable(context: Context): List<String> {
-//        println("---!!!  Started bluetooth work!!!-----")
-//        var bltList = listOf<String>()
-//        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-//        if (!bluetoothAdapter.isEnabled) {
-//            println("Bluetooth is not enabled")
-//        }
-//
-//        if (ActivityCompat.checkSelfPermission(
-//                context,
-//                Manifest.permission.BLUETOOTH_CONNECT
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            println("Should Requesting Bluetooth permission")
-//            return emptyList()
-//        }
-//
-//        var connectedBluetoothDevices by remember {
-//            mutableStateOf(
-//                ConnectedBluetoothDevices(
-//                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
-//                )
-//            )
-//        }
-//
-//        var currentBluetoothProfile: BluetoothProfile? = null
-//        var isRefreshing by remember { mutableStateOf(false) }
-//
-//        LaunchedEffect(bluetoothAdapter, currentBluetoothProfile, isRefreshing) {
-//            if (isRefreshing) {
-//                bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
-//                    override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-//                        currentBluetoothProfile = proxy
-//                        connectedBluetoothDevices = handleBluetoothService(profile, proxy)
-//                    }
-//
-//                    override fun onServiceDisconnected(profile: Int) {
-//                        if (profile == BluetoothProfile.A2DP) {
-//                            println("A2DP devices disconnected")
-//                        }
-//                    }
-//                }, BluetoothProfile.A2DP)
-//            }
-//            isRefreshing = false
-//        }
-//
-//
-//        //  bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED
-//        bluetoothAdapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
-//            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-//                connectedBluetoothDevices = handleBluetoothService(profile, proxy)
-//            }
-//
-//            override fun onServiceDisconnected(profile: Int) {
-//                if (profile == BluetoothProfile.A2DP) {
-//                   println("A2DP devices disconnected")
-//                }
-//            }
-//        }, BluetoothProfile.A2DP)
-//
-////        Button(onClick = { isRefreshing = true }) {
-////            Text("Refresh BT")
-////        }
-//
-//        // currently we are relating only on A2DP devices
-//        // but we could use them later with a little change if needed
-//        println("----- !!  device count =  ${connectedBluetoothDevices.a2dpDevices.size}!!!------------")
-//        connectedBluetoothDevices.a2dpDevices.forEach {
-//            bltList = bltList.plus(it.name)
-//            println("device = ${it.name}!")
-//        }
-//        return bltList
-//    }
-
-//    fun getBluetoothDevices(context: Context): Set<BluetoothDevice>? {
-//        var bltList = listOf<String>()
-//        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-//        if (!bluetoothAdapter.isEnabled) {
-//            println("Bluetooth is not enabled")
-//        }
-//        if (ActivityCompat.checkSelfPermission(
-//                context,
-//                Manifest.permission.BLUETOOTH_CONNECT
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            println("Should Requesting Bluetooth permission")
-////            return emptyList()
-//        }
-//        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
-////        println("---!! set of devices size = ${pairedDevices?.size} !!!-----")
-////        pairedDevices?.forEach { device ->
-////            val deviceName = device.name
-////            val deviceHardwareAddress = device.address // MAC address
-////            println("blt device = $deviceName")
-////            bltList = bltList.plus(deviceName)
-////        }
-//        return pairedDevices
-//    }
-//
-//    private fun connectToBluetoothDevice(context: Context, device: BluetoothDevice): BluetoothSocket? {
-//        // Check if the device is already connected
-//        if (ActivityCompat.checkSelfPermission(
-//                context,
-//                Manifest.permission.BLUETOOTH_CONNECT
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            println("Should Requesting Bluetooth permission")
-////            return emptyList()
-//        }
-//        var socket: BluetoothSocket? = null
-//        if (device.bondState!= BluetoothDevice.BOND_BONDED) {
-//            // Create a BluetoothSocket for the device
-//            socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-//
-//            // Attempt to connect to the device
-//            socket.connect()
-//
-//            // Do something with the socket, such as send or receive data
-//        }
-//        return socket
-//    }
-//    private fun sendDataToBluetoothDevice(context: Context, data: String, device: BluetoothDevice) {
-//        try {
-//            if (ActivityCompat.checkSelfPermission(
-//                    context,
-//                    Manifest.permission.BLUETOOTH_CONNECT
-//                ) != PackageManager.PERMISSION_GRANTED
-//            ) {
-//                println("Should Requesting Bluetooth permission")
-////            return emptyList()
-//            }
-//            // Get the BluetoothSocket for the device
-//            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-//            socket.connect()
-//            // Convert the string to bytes
-//            val bytes = data.toByteArray()
-//            // Send the bytes to the device
-//            val outputStream = socket.outputStream
-//            outputStream.write(bytes)
-//            // Close the socket
-//            socket.close()
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//    }
-
-//    fun handleBluetoothService(profile: Int, proxy: BluetoothProfile): ConnectedBluetoothDevices {
-//        val states = intArrayOf(
-//            BluetoothProfile.STATE_CONNECTED,
-////        BluetoothProfile.STATE_CONNECTING,
-////        BluetoothProfile.STATE_DISCONNECTED,
-////        BluetoothProfile.STATE_DISCONNECTING
-//        )
-//
-//        val ad2dpDevices = mutableListOf<BluetoothDevice>()
-//        val gattDevices = mutableListOf<BluetoothDevice>()
-//        val gattServerDevices = mutableListOf<BluetoothDevice>()
-//        val headsetDevices = mutableListOf<BluetoothDevice>()
-//        val sapDevices = mutableListOf<BluetoothDevice>()
-//
-//        when (profile) {
-//            BluetoothProfile.A2DP -> ad2dpDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-//            BluetoothProfile.GATT -> gattDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-//            BluetoothProfile.GATT_SERVER -> gattServerDevices.addAll(
-//                proxy.getDevicesMatchingConnectionStates(
-//                    states
-//                )
-//            )
-//
-//            BluetoothProfile.HEADSET -> headsetDevices.addAll(
-//                proxy.getDevicesMatchingConnectionStates(
-//                    states
-//                )
-//            )
-//
-//            BluetoothProfile.SAP -> sapDevices.addAll(proxy.getDevicesMatchingConnectionStates(states))
-//        }
-//        return ConnectedBluetoothDevices(
-//            ad2dpDevices,
-//            gattDevices,
-//            gattServerDevices,
-//            headsetDevices,
-//            sapDevices
-//        )
-////    to get the connected devices of selected profile
-////    if (profile == BluetoothProfile.A2DP) {
-////        val a2dp = proxy as BluetoothProfile
-////        val devices = a2dp.connectedDevices
-////        Log.i("MainActivity", "A2DP devices: $devices")
-////    }
-//    }
-
-    data class ConnectedBluetoothDevices(
-        val a2dpDevices: List<BluetoothDevice>,
-        val gattDevices: List<BluetoothDevice>,
-        val gattServerDevices: List<BluetoothDevice>,
-        val headsetDevices: List<BluetoothDevice>,
-        val sapDevices: List<BluetoothDevice>,
-    )
+//    data class ConnectedBluetoothDevices(
+//        val a2dpDevices: List<BluetoothDevice>,
+//        val gattDevices: List<BluetoothDevice>,
+//        val gattServerDevices: List<BluetoothDevice>,
+//        val headsetDevices: List<BluetoothDevice>,
+//        val sapDevices: List<BluetoothDevice>,
+//    )
     private fun getArmNumber(
         startPointX: Float,
         quadroPodBody: ImageBitmap,

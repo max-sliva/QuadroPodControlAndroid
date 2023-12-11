@@ -1,7 +1,9 @@
+import android.bluetooth.BluetoothSocket
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import com.example.quadropodcontrol.BluetoothWork
 import kotlin.math.atan
 
 fun degsForLeg(degs: Float, curArm: Int) = degs * (if(curArm==0 || curArm==1) -1 else 1)
@@ -39,16 +41,22 @@ fun DrawScope.armRotate(
     offsetX: Float,
     offsetY: Float,
 //    rotatePoints: Array<Pair<Int, Int>>
-    rotatePoints: Pair<Int, Int>
+    rotatePoints: Pair<Int, Int>,
+//    curSerialPort: SerialPort,
+    curAngleForArm: Int,
+    onAngleChanged:(x: Int) -> Unit
 ) {
     val armRotatePointX = arm.width.toFloat()
     val armRotatePointY = (arm.height / 2).toFloat()
     val degs = angle(armRotatePointX, armRotatePointY + y0, startPointX, startPointY, offsetX, offsetY)
 //    println(" angle = $degs ")
-    //ограничиваем поворот
-//                    if (degs<=65 || degs>=-90)
-//                    if (degs<=65)
-    angleForServoArm(degs, armNumber)
+    val angleToComPort = angleForServoArm(degs, armNumber)
+//  todo разобраться с нумерацией сервов и сделать плавное изменение угла
+    if (curAngleForArm!=angleToComPort) {
+        println("for arm#$armNumber curAngleForArm = $curAngleForArm, angleToComPort = $angleToComPort")
+        onAngleChanged(angleToComPort)
+//        if (curSerialPort.portName != "") writeAngleToComPort(curSerialPort, armNumber, angleToComPort)
+    }
     if (armNumber == 1) { //для arm1
 //        angleForServoArm(degs, armNumber)
         if (degs <= 65 && degs > -85 && startPointX + offsetX < armRotatePointX)
@@ -205,4 +213,20 @@ fun angleForServoLeg(degs: Float, leg: Int): Int {
 
 fun sendToArduino(arm: Int, angle: Int){
  //https://github.com/java-native/jssc/wiki/examples
+}
+
+fun writeArmAngleToArduino(bltWork: BluetoothWork, curSocket: BluetoothSocket, armNumber: Int, angleToComPort:  Int, isArm: Boolean=true) {
+    println("trying to send angle = $angleToComPort for ${if (isArm) "arm" else "leg"}=$armNumber")
+    if (curSocket.isConnected) {
+        var armNumberToSend = armNumber
+//        curComPort.setParams(9600, 8, 1, 0)
+//        if (armNumber == 3) armNumberToSend = 4
+//        if (armNumber == 4) armNumberToSend = 3
+//        curComPort.writeString("${(armNumberToSend-1)*2}-$angleToComPort\n")
+        if (armNumber == 2) armNumberToSend = 3
+        if (armNumber == 3) armNumberToSend = 2
+//        bltWork.sendDataToBluetoothDevice(curSocket, "")
+        if (isArm) bltWork.sendDataToBluetoothDevice(curSocket,"${armNumberToSend*2}-$angleToComPort\n")
+        else bltWork.sendDataToBluetoothDevice(curSocket,"${armNumberToSend*2+1}-$angleToComPort\n")
+    }
 }
