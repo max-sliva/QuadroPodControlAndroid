@@ -1,16 +1,11 @@
 package com.example.quadropodcontrol
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.content.Context
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -33,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -49,7 +43,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
-import androidx.core.app.ActivityCompat
 import androidx.core.graphics.blue
 import androidx.core.graphics.get
 import androidx.core.graphics.green
@@ -58,15 +51,6 @@ import armRotate
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 import legRotate
 import kotlin.math.atan
-import java.io.IOException
-
-import java.io.OutputStream
-
-import java.util.UUID
-
-import android.bluetooth.BluetoothSocket
-
-
 
 
 class MainActivity : ComponentActivity() {
@@ -123,25 +107,17 @@ class MainActivity : ComponentActivity() {
 
 //        val imageWidth = quadroPodBody.width * LocalDensity.current.density
 //        val imageHeight = quadroPodBody.width * LocalDensity.current.density
-//        todo сделать отдельный класс для работы с bluetooth
-        var bltList = listOf<String>()
-        if (ActivityCompat.checkSelfPermission(LocalContext.current, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
-        ) {
-            println("Should Requesting Bluetooth permission")
-//            return emptyList()
-        }
-        val pairedDevices = getBluetoothDevices(LocalContext.current)
-        println("---!! set of devices size = ${pairedDevices?.size} !!!-----")
-        pairedDevices?.forEach { device ->
-            val deviceName = device.name
-            val deviceHardwareAddress = device.address // MAC address
-            println("blt device = $deviceName")
-            bltList = bltList.plus(deviceName)
-        }
-//        var bltList = getBluetoothDevices(LocalContext.current)
-//        var bltList = getBluetoothAvailable(LocalContext.current)
-//        println("")
+
+        var bltList = listOf<String>() //список имен устройств
+        val bltWork = BluetoothWork(LocalContext.current)
+        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
+        var pairedDevices = remember { mutableSetOf<BluetoothDevice>() }
+        pairedDevices = bltWork.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
+        println("blt devices = ${bltList}")
         println("rotatePoints = ${rotatePoints.toList()}")
+        var curDeviceName by remember { mutableStateOf("")        }
+        var curBluetoothDevice by remember {  mutableStateOf(null)  }
+
         var arrayForGettingAngles = arrayOf<HashMap<String, Pair<Float, Float>>>()
         var offsetXArray = remember { mutableStateListOf<Float>() }
         var offsetYArray = remember { mutableStateListOf<Float>() }
@@ -191,11 +167,14 @@ class MainActivity : ComponentActivity() {
 //                println("degsForLegs = $x ")
             } //для вызова окна с нужной leg
             DropdownDemo(bltList){ x-> //лямбда для ф-ии обратного вызова
-//                curComPort=x
-//                if (curComPort!=""){
+                curDeviceName=x
+                if (curDeviceName!=""){
+                    val curDevice: BluetoothDevice = bltWork.getDeviceByName(curDeviceName)
+                    println("curDevice = ${curDevice}")
+                    val socketToDevice = bltWork.connectToBluetoothDevice(curDevice)
 //                    curSerialPort = SerialPort(curComPort)
 //                    curSerialPort.openPort()
-//                }
+                }
             }
             Canvas(modifier = Modifier
                 .fillMaxSize()
@@ -409,78 +388,78 @@ class MainActivity : ComponentActivity() {
 //        return bltList
 //    }
 
-    fun getBluetoothDevices(context: Context): Set<BluetoothDevice>? {
-        var bltList = listOf<String>()
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-        if (!bluetoothAdapter.isEnabled) {
-            println("Bluetooth is not enabled")
-        }
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            println("Should Requesting Bluetooth permission")
-//            return emptyList()
-        }
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
-//        println("---!! set of devices size = ${pairedDevices?.size} !!!-----")
-//        pairedDevices?.forEach { device ->
-//            val deviceName = device.name
-//            val deviceHardwareAddress = device.address // MAC address
-//            println("blt device = $deviceName")
-//            bltList = bltList.plus(deviceName)
+//    fun getBluetoothDevices(context: Context): Set<BluetoothDevice>? {
+//        var bltList = listOf<String>()
+//        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+//        val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
+//        if (!bluetoothAdapter.isEnabled) {
+//            println("Bluetooth is not enabled")
 //        }
-        return pairedDevices
-    }
-
-    private fun connectToBluetoothDevice(context: Context, device: BluetoothDevice): BluetoothSocket? {
-        // Check if the device is already connected
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            println("Should Requesting Bluetooth permission")
-//            return emptyList()
-        }
-        var socket: BluetoothSocket? = null
-        if (device.bondState!= BluetoothDevice.BOND_BONDED) {
-            // Create a BluetoothSocket for the device
-            socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-
-            // Attempt to connect to the device
-            socket.connect()
-
-            // Do something with the socket, such as send or receive data
-        }
-        return socket
-    }
-    private fun sendDataToBluetoothDevice(context: Context, data: String, device: BluetoothDevice) {
-        try {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                println("Should Requesting Bluetooth permission")
-//            return emptyList()
-            }
-            // Get the BluetoothSocket for the device
-            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-            socket.connect()
-            // Convert the string to bytes
-            val bytes = data.toByteArray()
-            // Send the bytes to the device
-            val outputStream = socket.outputStream
-            outputStream.write(bytes)
-            // Close the socket
-            socket.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
+//        if (ActivityCompat.checkSelfPermission(
+//                context,
+//                Manifest.permission.BLUETOOTH_CONNECT
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            println("Should Requesting Bluetooth permission")
+////            return emptyList()
+//        }
+//        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
+////        println("---!! set of devices size = ${pairedDevices?.size} !!!-----")
+////        pairedDevices?.forEach { device ->
+////            val deviceName = device.name
+////            val deviceHardwareAddress = device.address // MAC address
+////            println("blt device = $deviceName")
+////            bltList = bltList.plus(deviceName)
+////        }
+//        return pairedDevices
+//    }
+//
+//    private fun connectToBluetoothDevice(context: Context, device: BluetoothDevice): BluetoothSocket? {
+//        // Check if the device is already connected
+//        if (ActivityCompat.checkSelfPermission(
+//                context,
+//                Manifest.permission.BLUETOOTH_CONNECT
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            println("Should Requesting Bluetooth permission")
+////            return emptyList()
+//        }
+//        var socket: BluetoothSocket? = null
+//        if (device.bondState!= BluetoothDevice.BOND_BONDED) {
+//            // Create a BluetoothSocket for the device
+//            socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+//
+//            // Attempt to connect to the device
+//            socket.connect()
+//
+//            // Do something with the socket, such as send or receive data
+//        }
+//        return socket
+//    }
+//    private fun sendDataToBluetoothDevice(context: Context, data: String, device: BluetoothDevice) {
+//        try {
+//            if (ActivityCompat.checkSelfPermission(
+//                    context,
+//                    Manifest.permission.BLUETOOTH_CONNECT
+//                ) != PackageManager.PERMISSION_GRANTED
+//            ) {
+//                println("Should Requesting Bluetooth permission")
+////            return emptyList()
+//            }
+//            // Get the BluetoothSocket for the device
+//            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+//            socket.connect()
+//            // Convert the string to bytes
+//            val bytes = data.toByteArray()
+//            // Send the bytes to the device
+//            val outputStream = socket.outputStream
+//            outputStream.write(bytes)
+//            // Close the socket
+//            socket.close()
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//    }
 
 //    fun handleBluetoothService(profile: Int, proxy: BluetoothProfile): ConnectedBluetoothDevices {
 //        val states = intArrayOf(
@@ -797,7 +776,7 @@ fun DropdownDemo(itemsInitial: List<String>, onUpdate: (x: String) -> Unit) { //
     var selectedIndex by remember { mutableStateOf(-1) }
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
         Text( //заголовок комбобокса
-            if (selectedIndex<0) "Выберите порт: ▼" //если еще ничего не выбрано
+            if (selectedIndex<0) "Выберите устройство: ▼" //если еще ничего не выбрано
             else items[selectedIndex], //если выбрано
             modifier = Modifier.clickable(onClick = { //при нажатии на текст раскрываем комбобокс
 //                val tempPortList = SerialPortList.getPortNames().toList() //получаем активные порты
