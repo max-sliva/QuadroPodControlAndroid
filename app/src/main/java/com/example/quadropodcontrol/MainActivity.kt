@@ -2,6 +2,7 @@ package com.example.quadropodcontrol
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -157,6 +158,7 @@ class MainActivity : ComponentActivity() {
         var startPointY by remember { mutableStateOf(0f) }
         val openDialog = remember { mutableStateOf(false) }
         var curArm by remember { mutableStateOf(-1) }
+        val mContext = LocalContext.current
 //    print(" angle at start = $degs")
 //        MaterialTheme {
         Column(
@@ -164,17 +166,14 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally, //по центру горизонтально
 //            verticalArrangement = Arrangement.Center //и вертикально
         ) {
-            if (openDialog.value) MakeAlertDialog(
-                curArm.toString(),
-                openDialog,
-                degsForLegs[curArm]
-//                legStartPointXArray[curArm],
-//                legStartPointYArray[curArm]
-            ) { x -> //ф-ия обратного вызова для запоминания угла
-                degsForLegs[curArm] = x
-//                legStartPointYArray[curArm] = y
-//                println("degsForLegs = $x ")
-            } //для вызова окна с нужной leg
+            if (openDialog.value)
+//                MakeAlertDialog(
+//                curArm.toString(),
+//                openDialog,
+//                degsForLegs[curArm]
+//            ) { x -> //ф-ия обратного вызова для запоминания угла
+//                degsForLegs[curArm] = x
+//            } //для вызова окна с нужной leg
             DropdownDemo(bltList){ x-> //лямбда для ф-ии обратного вызова
                 curDeviceName=x
                 if (curDeviceName!=""){
@@ -251,6 +250,9 @@ class MainActivity : ComponentActivity() {
 //                            println("leg = $number")
                             curArm = number
                             openDialog.value = true
+                            val newAct = Intent(mContext, SecondActivity::class.java) //описан ниже
+                            newAct.putExtra("angle", degsForLegs[number])
+                            mContext.startActivity(newAct)
                         }
                     )
                 }
