@@ -51,6 +51,7 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import armRotate
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
+import curLegBody
 import legRotate
 import writeArmAngleToArduino
 import kotlin.math.atan
@@ -166,7 +167,7 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally, //по центру горизонтально
 //            verticalArrangement = Arrangement.Center //и вертикально
         ) {
-            if (openDialog.value)
+//            if (openDialog.value)
 //                MakeAlertDialog(
 //                curArm.toString(),
 //                openDialog,
@@ -252,6 +253,7 @@ class MainActivity : ComponentActivity() {
                             openDialog.value = true
                             val newAct = Intent(mContext, SecondActivity::class.java) //описан ниже
                             newAct.putExtra("angle", degsForLegs[number])
+                            newAct.putExtra("legNumber", number)
                             mContext.startActivity(newAct)
                         }
                     )
@@ -359,139 +361,139 @@ class MainActivity : ComponentActivity() {
     }
 
     //    @OptIn(ExperimentalMaterialApi::class)
-    @Composable
-    fun MakeAlertDialog(
-        curArm: String,
-        openDialog: MutableState<Boolean>,
-        degsInLeg: Float,
-//    startPointX: Float,
-//    startPointY: Float,
-        onUpdate: (x: Float) -> Unit
-    ) { //показываем окно с нужным leg для его поворота
-//    var degsInDialog = 0f
-        var degs by remember { mutableStateOf(0f) }
-        degs = degsInLeg
-
-        AlertDialog( //todo переделать в отдельное активити
-            onDismissRequest = { //действия при закрытии окна
-                openDialog.value = false
-                onUpdate(degs)
-                println("Exit")
-            },
-            modifier = Modifier.fillMaxSize(),
-            title = { Text(text = curArm) }, //заголовок окна
-            text = { //внутренняя часть окна
-                val backImage = BitmapFactory.decodeResource(
-                    LocalContext.current.resources,
-                    R.drawable.back
-                )
-
-                var legBody: Bitmap? = null
-                val res = LocalContext.current.resources
-                legBody = curLegBody(curArm.toInt(), res)
-                val pixMap = legBody
-                var rotatePoint: Pair<Int, Int>? = null
-                for (x in 11 until legBody!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
-                    for (y in 11 until legBody.height) {
-                        if (pixMap!![x, y].green in (200..255) && pixMap[x, y].red < 125 && pixMap[x, y].blue < 255) {
-//                        println("found green on leg${curArm.toInt() + 1} at $x $y")
-                            rotatePoint = Pair(x, y)
-                        }
-                    }
-                }
-                var offsetX by remember { mutableStateOf(0f) }
-                var offsetY by remember { mutableStateOf(0f) }
-                var startPointX by remember { mutableStateOf(0f) }
-                var startPointY by remember { mutableStateOf(0f) }
-
-                var leg: Bitmap? = curLeg(curArm.toInt(), res)
-
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = { touch ->
-//                            println("\nStart of the interaction is x=${touch.x} y=${touch.y}")
-//                                onUpdate(touch.x, touch.y)
-                                    startPointX = touch.x
-                                    startPointY = touch.y
-
-                                    offsetX = 0F //сбрасываем оффсеты, чтобы нормально двигать ногу
-                                    offsetY = 0F
-                                    var number = 0
-                                },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-//                            println("in listener x    = ${dragAmount.x}  y = ${dragAmount.y}  ")
-//                            println("arm1RotatePointX = $arm1RotatePointX arm1RotatePointY = $arm1RotatePointY" )
-                                    offsetX += dragAmount.x
-                                    offsetY += dragAmount.y
-                                    degs = angle(
-                                        rotatePoint!!.first.toFloat(),
-                                        rotatePoint.second.toFloat(),
-                                        startPointX,
-                                        startPointY,
-                                        offsetX,
-                                        offsetY
-                                    )
-//                                println("angle = $degs")
-                                },
-                                onDragEnd = { },
-                            )
-                        }
-                ) {
-                    var rotatePointLeg: Pair<Int, Int>? = null
-                    val pixMapForLeg = leg
-                    for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
-                        for (y in 11 until leg.height) {
-                            if ((pixMapForLeg!![x, y].green in (200..255) && curArm.toInt() != 0)
-                                || (curArm.toInt() == 0 && pixMapForLeg[x, y].green in (200..255) && pixMapForLeg[x, y].red < 85 && pixMapForLeg[x, y].blue < 85)
-                            ) {
-//                        println("found green on leg${curArm.toInt() + 1} at $x $y")
-                                rotatePointLeg = Pair(x, y)
-                            }
-                        }
-                    }
-//                println("for leg pair.x = ${rotatePointLeg?.first}, pair.y = ${rotatePointLeg?.second}")
-//                val degs = angle(rotatePoint!!.first.toFloat(), rotatePoint.second.toFloat(), startPointX, startPointY, offsetX, offsetY)
-//                println("angle for leg = $degs")
-                    try {
-                        drawImage(
-                            image = backImage.asImageBitmap(),
-                            topLeft = Offset(0F, 0F)
-                        )
-//                    println("curArm = $curArm")
-                        if (curArm.toInt() == 0 || curArm.toInt() == 2) {
-                            legRotate(curArm.toInt(), degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
-                            drawImage(
-                                image = legBody!!.asImageBitmap(),
-                                topLeft = Offset(0F, 0F)
-                            )
-                        } else {
-                            drawImage(
-                                image = legBody!!.asImageBitmap(),
-                                topLeft = Offset(0F, 0F)
-                            )
-                            legRotate(curArm.toInt(), degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
-                        }
-                    } catch (e: NullPointerException) {
-//                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
-                        println("No image")
-                    }
-//                val degs = angle(armRotatePointX, armRotatePointY + y0, startPointX, startPointY, offsetX, offsetY)
-                }
-            },
-            confirmButton = { //кнопка Ok, которая будет закрывать окно
-                Button(onClick = {
-                    openDialog.value = false
-                    onUpdate(degs)
-                    println("Ok pressed")
-                })
-                { Text(text = "OK") }
-            }
-        )
-    }
+//    @Composable
+//    fun MakeAlertDialog(
+//        curArm: String,
+//        openDialog: MutableState<Boolean>,
+//        degsInLeg: Float,
+////    startPointX: Float,
+////    startPointY: Float,
+//        onUpdate: (x: Float) -> Unit
+//    ) { //показываем окно с нужным leg для его поворота
+////    var degsInDialog = 0f
+//        var degs by remember { mutableStateOf(0f) }
+//        degs = degsInLeg
+//
+//        AlertDialog( //todo переделать в отдельное активити
+//            onDismissRequest = { //действия при закрытии окна
+//                openDialog.value = false
+//                onUpdate(degs)
+//                println("Exit")
+//            },
+//            modifier = Modifier.fillMaxSize(),
+//            title = { Text(text = curArm) }, //заголовок окна
+//            text = { //внутренняя часть окна
+//                val backImage = BitmapFactory.decodeResource(
+//                    LocalContext.current.resources,
+//                    R.drawable.back
+//                )
+//
+//                var legBody: Bitmap? = null
+//                val res = LocalContext.current.resources
+//                legBody = curLegBody(curArm.toInt(), res)
+//                val pixMap = legBody
+//                var rotatePoint: Pair<Int, Int>? = null
+//                for (x in 11 until legBody!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
+//                    for (y in 11 until legBody.height) {
+//                        if (pixMap!![x, y].green in (200..255) && pixMap[x, y].red < 125 && pixMap[x, y].blue < 255) {
+////                        println("found green on leg${curArm.toInt() + 1} at $x $y")
+//                            rotatePoint = Pair(x, y)
+//                        }
+//                    }
+//                }
+//                var offsetX by remember { mutableStateOf(0f) }
+//                var offsetY by remember { mutableStateOf(0f) }
+//                var startPointX by remember { mutableStateOf(0f) }
+//                var startPointY by remember { mutableStateOf(0f) }
+//
+//                var leg: Bitmap? = curLeg(curArm.toInt(), res)
+//
+//                Canvas(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .pointerInput(Unit) {
+//                            detectDragGestures(
+//                                onDragStart = { touch ->
+////                            println("\nStart of the interaction is x=${touch.x} y=${touch.y}")
+////                                onUpdate(touch.x, touch.y)
+//                                    startPointX = touch.x
+//                                    startPointY = touch.y
+//
+//                                    offsetX = 0F //сбрасываем оффсеты, чтобы нормально двигать ногу
+//                                    offsetY = 0F
+//                                    var number = 0
+//                                },
+//                                onDrag = { change, dragAmount ->
+//                                    change.consume()
+////                            println("in listener x    = ${dragAmount.x}  y = ${dragAmount.y}  ")
+////                            println("arm1RotatePointX = $arm1RotatePointX arm1RotatePointY = $arm1RotatePointY" )
+//                                    offsetX += dragAmount.x
+//                                    offsetY += dragAmount.y
+//                                    degs = angle(
+//                                        rotatePoint!!.first.toFloat(),
+//                                        rotatePoint.second.toFloat(),
+//                                        startPointX,
+//                                        startPointY,
+//                                        offsetX,
+//                                        offsetY
+//                                    )
+////                                println("angle = $degs")
+//                                },
+//                                onDragEnd = { },
+//                            )
+//                        }
+//                ) {
+//                    var rotatePointLeg: Pair<Int, Int>? = null
+//                    val pixMapForLeg = leg
+//                    for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
+//                        for (y in 11 until leg.height) {
+//                            if ((pixMapForLeg!![x, y].green in (200..255) && curArm.toInt() != 0)
+//                                || (curArm.toInt() == 0 && pixMapForLeg[x, y].green in (200..255) && pixMapForLeg[x, y].red < 85 && pixMapForLeg[x, y].blue < 85)
+//                            ) {
+////                        println("found green on leg${curArm.toInt() + 1} at $x $y")
+//                                rotatePointLeg = Pair(x, y)
+//                            }
+//                        }
+//                    }
+////                println("for leg pair.x = ${rotatePointLeg?.first}, pair.y = ${rotatePointLeg?.second}")
+////                val degs = angle(rotatePoint!!.first.toFloat(), rotatePoint.second.toFloat(), startPointX, startPointY, offsetX, offsetY)
+////                println("angle for leg = $degs")
+//                    try {
+//                        drawImage(
+//                            image = backImage.asImageBitmap(),
+//                            topLeft = Offset(0F, 0F)
+//                        )
+////                    println("curArm = $curArm")
+//                        if (curArm.toInt() == 0 || curArm.toInt() == 2) {
+//                            legRotate(curArm.toInt(), degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
+//                            drawImage(
+//                                image = legBody!!.asImageBitmap(),
+//                                topLeft = Offset(0F, 0F)
+//                            )
+//                        } else {
+//                            drawImage(
+//                                image = legBody!!.asImageBitmap(),
+//                                topLeft = Offset(0F, 0F)
+//                            )
+//                            legRotate(curArm.toInt(), degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
+//                        }
+//                    } catch (e: NullPointerException) {
+////                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
+//                        println("No image")
+//                    }
+////                val degs = angle(armRotatePointX, armRotatePointY + y0, startPointX, startPointY, offsetX, offsetY)
+//                }
+//            },
+//            confirmButton = { //кнопка Ok, которая будет закрывать окно
+//                Button(onClick = {
+//                    openDialog.value = false
+//                    onUpdate(degs)
+//                    println("Ok pressed")
+//                })
+//                { Text(text = "OK") }
+//            }
+//        )
+//    }
 
 //    @Composable
     private fun curLeg(legNumber: Int, res: Resources): Bitmap? {
@@ -518,28 +520,28 @@ class MainActivity : ComponentActivity() {
     }
 
 //    @Composable
-    private fun curLegBody(legNumber: Int, res: Resources): Bitmap? {
-        var leg: Bitmap? = null
-        when (legNumber){
-            0-> leg = BitmapFactory.decodeResource(
-                res,
-                R.drawable.leg1_body_
-            )
-            1-> leg = BitmapFactory.decodeResource(
-                res,
-                R.drawable.leg2_body_
-            )
-            2-> leg = BitmapFactory.decodeResource(
-                res,
-                R.drawable.leg3_body_
-            )
-            3-> leg = BitmapFactory.decodeResource(
-                res,
-                R.drawable.leg4_body_
-            )
-        }
-        return leg
-    }
+//    private fun curLegBody(legNumber: Int, res: Resources): Bitmap? {
+//        var leg: Bitmap? = null
+//        when (legNumber){
+//            0-> leg = BitmapFactory.decodeResource(
+//                res,
+//                R.drawable.leg1_body_
+//            )
+//            1-> leg = BitmapFactory.decodeResource(
+//                res,
+//                R.drawable.leg2_body_
+//            )
+//            2-> leg = BitmapFactory.decodeResource(
+//                res,
+//                R.drawable.leg3_body_
+//            )
+//            3-> leg = BitmapFactory.decodeResource(
+//                res,
+//                R.drawable.leg4_body_
+//            )
+//        }
+//        return leg
+//    }
 
     fun angle(
         arm1RotatePointX: Float,

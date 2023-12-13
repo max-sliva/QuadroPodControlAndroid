@@ -18,6 +18,7 @@
             android:name=".SecondActivity"
             android:exported="false"
             android:label="@string/title_activity_second"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.QuadroPodControl" />
         <activity
             android:name=".MainActivity"

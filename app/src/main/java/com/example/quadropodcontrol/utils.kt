@@ -1,13 +1,62 @@
 import android.bluetooth.BluetoothSocket
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import com.example.quadropodcontrol.BluetoothWork
+import com.example.quadropodcontrol.R
 import kotlin.math.atan
 
 fun degsForLeg(degs: Float, curArm: Int) = degs * (if(curArm==0 || curArm==1) -1 else 1)
 
+fun curLegBody(legNumber: Int, res: Resources): Bitmap? {
+    var leg: Bitmap? = null
+    when (legNumber){
+        0-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg1_body_
+        )
+        1-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg2_body_
+        )
+        2-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg3_body_
+        )
+        3-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg4_body_
+        )
+    }
+    return leg
+}
+
+fun curLeg(legNumber: Int, res: Resources): Bitmap? {
+    var leg: Bitmap? = null
+    when (legNumber){
+        0-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg1
+        )
+        1-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg2
+        )
+        2-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg3
+        )
+        3-> leg = BitmapFactory.decodeResource(
+            res,
+            R.drawable.leg4
+        )
+    }
+    return leg
+}
 fun angle(
     arm1RotatePointX: Float,
     arm1RotatePointY: Float,
