@@ -51,8 +51,8 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import armRotate
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
-import curLegBody
-import legRotate
+//import curLegBody
+//import legRotate
 import writeArmAngleToArduino
 import kotlin.math.atan
 

@@ -16,7 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -34,7 +34,13 @@ import legRotate
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        println("started second activity")
         setContent {
+            val backImage = BitmapFactory.decodeResource(
+                LocalContext.current.resources,
+                R.drawable.back
+            ).asImageBitmap()
+            println("loaded back image")
             var angle by remember { mutableStateOf(0F) }
             var legNumber: Int? = null
             val extras = intent.extras
@@ -42,13 +48,30 @@ class SecondActivity : ComponentActivity() {
                 angle = extras.getFloat("angle")
                 legNumber = extras.getInt("legNumber")+1
             }
+            var legBody: Bitmap? = null
+            val res = LocalContext.current.resources
+            legBody = curLegBody(legNumber!!, res)
+            var leg: Bitmap? = curLeg(legNumber, res)
             println("angle = $angle")
+            var rotatePointLeg: Pair<Int, Int>? = null
+            val pixMapForLeg = leg
+            for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
+                for (y in 11 until leg.height) {
+                    if ((pixMapForLeg!![x, y].green in (200..255) && legNumber != 0)
+                        || (legNumber == 0 && pixMapForLeg[x, y].green in (200..255) && pixMapForLeg[x, y].red < 85 && pixMapForLeg[x, y].blue < 85)
+                    ) {
+                        println("found green on leg${legNumber + 1} at $x $y")
+                        rotatePointLeg = Pair(x, y)
+                    }
+                }
+            }
             QuadroPodControlTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LegRotate(legNumber!!, angle)
+                    println("calling LegRotate")
+                    LegRotate(backImage, legBody, leg, legNumber, angle, rotatePointLeg)
                 }
             }
         }
@@ -56,22 +79,25 @@ class SecondActivity : ComponentActivity() {
 }
 
 @Composable
-fun LegRotate(legNumber:Int, angle: Float?, modifier: Modifier = Modifier) {
-    val backImage = BitmapFactory.decodeResource(
-        LocalContext.current.resources,
-        R.drawable.back
-    )
+fun LegRotate(
+    backImage: ImageBitmap,
+    legBody: Bitmap?,
+    leg: Bitmap?,
+    legNumber: Int,
+    angle: Float?,
+    rotatePointLeg: Pair<Int, Int>?
+) {
     var degs by remember { mutableStateOf(0f) }
     degs = angle!!
-    var legBody: Bitmap? = null
-    val res = LocalContext.current.resources
-    legBody = curLegBody(legNumber, res)
+//    var legBody: Bitmap? = null
+//    val res = LocalContext.current.resources
+//    legBody = curLegBody(legNumber, res)
     val pixMap = legBody
     var rotatePoint: Pair<Int, Int>? = null
     for (x in 11 until legBody!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
         for (y in 11 until legBody.height) {
             if (pixMap!![x, y].green in (200..255) && pixMap[x, y].red < 125 && pixMap[x, y].blue < 255) {
-//                        println("found green on leg${curArm.toInt() + 1} at $x $y")
+                        println("found green on legBody${legNumber + 1} at $x $y")
                 rotatePoint = Pair(x, y)
             }
         }
@@ -81,7 +107,7 @@ fun LegRotate(legNumber:Int, angle: Float?, modifier: Modifier = Modifier) {
     var startPointX by remember { mutableStateOf(0f) }
     var startPointY by remember { mutableStateOf(0f) }
 
-    var leg: Bitmap? = curLeg(legNumber, res)
+//    var leg: Bitmap? = curLeg(legNumber, res)
 
     Canvas(
         modifier = Modifier
@@ -118,40 +144,43 @@ fun LegRotate(legNumber:Int, angle: Float?, modifier: Modifier = Modifier) {
                 )
             }
     ) {
-        var rotatePointLeg: Pair<Int, Int>? = null
-        val pixMapForLeg = leg
-        for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
-            for (y in 11 until leg.height) {
-                if ((pixMapForLeg!![x, y].green in (200..255) && legNumber != 0)
-                    || (legNumber == 0 && pixMapForLeg[x, y].green in (200..255) && pixMapForLeg[x, y].red < 85 && pixMapForLeg[x, y].blue < 85)
-                ) {
-//                        println("found green on leg${curArm.toInt() + 1} at $x $y")
-                    rotatePointLeg = Pair(x, y)
-                }
-            }
-        }
+//        var rotatePointLeg: Pair<Int, Int>? = null
+//        val pixMapForLeg = leg
+//        for (x in 11 until leg!!.width) { //в циклах ищем зеленые точки, чтоб их добавить к массиву точек поворота
+//            for (y in 11 until leg.height) {
+//                if ((pixMapForLeg!![x, y].green in (200..255) && legNumber != 0)
+//                    || (legNumber == 0 && pixMapForLeg[x, y].green in (200..255) && pixMapForLeg[x, y].red < 85 && pixMapForLeg[x, y].blue < 85)
+//                ) {
+//                        println("found green on leg${legNumber + 1} at $x $y")
+//                    rotatePointLeg = Pair(x, y)
+//                }
+//            }
+//        }
 //                println("for leg pair.x = ${rotatePointLeg?.first}, pair.y = ${rotatePointLeg?.second}")
 //                val degs = angle(rotatePoint!!.first.toFloat(), rotatePoint.second.toFloat(), startPointX, startPointY, offsetX, offsetY)
 //                println("angle for leg = $degs")
         try {
+            println("trying to draw backImage")
             drawImage(
-                image = backImage.asImageBitmap(),
+                image = backImage,
                 dstSize = IntSize(size.width.toInt(), size.height.toInt())
 //                topLeft = Offset(0F, 0F)
             )
 //                    println("curArm = $curArm")
             if (legNumber == 0 || legNumber == 2) {
-                legRotate(legNumber, degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
+                legRotate(legNumber, degs, leg!!.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
                 drawImage(
                     image = legBody!!.asImageBitmap(),
-                    topLeft = Offset(0F, 0F)
+//                    topLeft = Offset(0F, 0F)
+                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
                 )
             } else {
                 drawImage(
                     image = legBody!!.asImageBitmap(),
-                    topLeft = Offset(0F, 0F)
+//                    topLeft = Offset(0F, 0F)
+                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
                 )
-                legRotate(legNumber, degs, leg.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
+                legRotate(legNumber, degs, leg!!.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
             }
         } catch (e: NullPointerException) {
 //                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
