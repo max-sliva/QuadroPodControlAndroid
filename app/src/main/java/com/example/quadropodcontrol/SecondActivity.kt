@@ -40,7 +40,7 @@ class SecondActivity : ComponentActivity() {
                 LocalContext.current.resources,
                 R.drawable.back
             ).asImageBitmap()
-            println("loaded back image")
+//            println("loaded back image")
             var angle by remember { mutableStateOf(0F) }
             var legNumber: Int? = null
             val extras = intent.extras
@@ -71,7 +71,7 @@ class SecondActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     println("calling LegRotate")
-                    LegRotate(backImage, legBody, leg, legNumber, angle, rotatePointLeg)
+                    LegRotate(backImage, legBody, leg.asImageBitmap(), legNumber, angle, rotatePointLeg)
                 }
             }
         }
@@ -82,7 +82,7 @@ class SecondActivity : ComponentActivity() {
 fun LegRotate(
     backImage: ImageBitmap,
     legBody: Bitmap?,
-    leg: Bitmap?,
+    leg: ImageBitmap,
     legNumber: Int,
     angle: Float?,
     rotatePointLeg: Pair<Int, Int>?
@@ -102,6 +102,7 @@ fun LegRotate(
             }
         }
     }
+    val legBodyImage = legBody.asImageBitmap()
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
     var startPointX by remember { mutableStateOf(0f) }
@@ -167,21 +168,23 @@ fun LegRotate(
 //                topLeft = Offset(0F, 0F)
             )
 //                    println("curArm = $curArm")
-            if (legNumber == 0 || legNumber == 2) {
-                legRotate(legNumber, degs, leg!!.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
-                drawImage(
-                    image = legBody!!.asImageBitmap(),
-//                    topLeft = Offset(0F, 0F)
-                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
-                )
-            } else {
-                drawImage(
-                    image = legBody!!.asImageBitmap(),
-//                    topLeft = Offset(0F, 0F)
-                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
-                )
-                legRotate(legNumber, degs, leg!!.asImageBitmap(), rotatePointLeg!!, rotatePoint!!)
-            }
+//            if (legNumber == 0 || legNumber == 2) {
+//                println("leg choice 1")
+//                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
+//                drawImage(
+//                    image = legBodyImage,
+////                    topLeft = Offset(0F, 0F)
+//                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
+//                )
+//            } else {
+//                println("leg choice 2")
+//                drawImage(
+//                    image = legBodyImage,
+////                    topLeft = Offset(0F, 0F)
+//                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
+//                )
+//                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
+//            }
         } catch (e: NullPointerException) {
 //                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
             println("No image")
