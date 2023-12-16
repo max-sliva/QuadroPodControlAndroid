@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.quadropodcontrol.BluetoothWork
 import com.example.quadropodcontrol.R
@@ -97,8 +98,8 @@ fun DrawScope.armRotate(
     curAngleForArm: Int,
     onAngleChanged:(x: Int) -> Unit
 ) {
-    val armRotatePointX = arm.width.toFloat()
-    val armRotatePointY = (arm.height / 2).toFloat()
+    val armRotatePointX = arm.width.toFloat()/ratio
+    val armRotatePointY = (arm.height / 2).toFloat()/ratio
     val degs = angle(armRotatePointX, armRotatePointY + y0, startPointX, startPointY, offsetX, offsetY)
 //    println(" angle = $degs ")
     val angleToComPort = angleForServoArm(degs, armNumber)
@@ -114,47 +115,54 @@ fun DrawScope.armRotate(
             rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt())
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
 //                    topLeft = Offset(x0, y0)
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             } else
 //                        if (degs >=60)
             if (startPointY + offsetY > armRotatePointY)
-                rotate(degrees = -65F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+                rotate(degrees = -65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                     drawImage(
                         image = arm,
-                        topLeft = Offset(x0, y0)
+//                        topLeft = Offset(x0, y0)
+                        dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                        dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                     )
                 }
             else
                 if (startPointY + offsetY < armRotatePointY)
-                    rotate(degrees = 85F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+                    rotate(degrees = 85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                         drawImage(
                             image = arm,
-                            topLeft = Offset(x0, y0)
+                            dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                            dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                         )
                     }
     } else if (armNumber == 2) {
 //        println("startPointY = $startPointY, offsetY = $offsetY, arm1RotatePointY +y0= ${armRotatePointY + y0}")
         if (degs >= -65 && degs <= 85 && startPointX + offsetX < armRotatePointX)
-            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         else if ((startPointY + offsetY) < (armRotatePointY + y0)) {
-            rotate(degrees = 65F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = 65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         } else if ((startPointY + offsetY) > (armRotatePointY + y0))
-            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
     } else if (armNumber == 3) {
@@ -162,26 +170,30 @@ fun DrawScope.armRotate(
 //        println("in arm3 degs = $degs")
         if (degs <= 60 && degs >= -85 && startPointX + offsetX > armRotatePointX || degs == 0F) {
 //            println("between")
-            rotate(degrees = degs, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+//                    topLeft = Offset(x0, y0),
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         } else if ((startPointY + offsetY) > (armRotatePointY)) {
 //            println("up")
-            rotate(degrees = 60F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = 60F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         } else if ((startPointY + offsetY) < (armRotatePointY)) {
 //            println("down")
-            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         }
@@ -189,24 +201,27 @@ fun DrawScope.armRotate(
 //        println("in arm4 startPointY = $startPointY, offsetY = $offsetY, arm1RotatePointY = $armRotatePointY y0 = $y0")
 //        println("in arm4 degs = $degs")
         if (degs <= 85 && degs >= -60 && startPointX + offsetX > armRotatePointX || degs == 0F) {
-            rotate(degrees = degs, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         } else if ((startPointY + offsetY) < (armRotatePointY + y0)) {
-            rotate(degrees = -60F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = -60F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
         } else if ((startPointY + offsetY) > (armRotatePointY + y0))
-            rotate(degrees = 85F, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = 85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
+                    dstOffset = IntOffset(x = x0.toInt(), y = y0.toInt())
                 )
             }
     }
