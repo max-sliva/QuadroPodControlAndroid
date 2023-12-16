@@ -168,23 +168,23 @@ fun LegRotate(
 //                topLeft = Offset(0F, 0F)
             )
 //                    println("curArm = $curArm")
-//            if (legNumber == 0 || legNumber == 2) {
-//                println("leg choice 1")
-//                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
-//                drawImage(
-//                    image = legBodyImage,
-////                    topLeft = Offset(0F, 0F)
-//                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
-//                )
-//            } else {
-//                println("leg choice 2")
-//                drawImage(
-//                    image = legBodyImage,
-////                    topLeft = Offset(0F, 0F)
-//                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
-//                )
-//                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
-//            }
+            if (legNumber == 0 || legNumber == 2) {
+                println("leg choice 1")
+                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
+                drawImage(
+                    image = legBodyImage,
+//                    topLeft = Offset(0F, 0F)
+                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
+                )
+            } else {
+                println("leg choice 2")
+                drawImage(
+                    image = legBodyImage,
+//                    topLeft = Offset(0F, 0F)
+                    dstSize = IntSize(size.width.toInt(), size.height.toInt())
+                )
+                legRotate(legNumber, degs, leg, rotatePointLeg!!, rotatePoint!!)
+            }
         } catch (e: NullPointerException) {
 //                    Toast.makeText(applicationContext,"No image", Toast.LENGTH_LONG).show()
             println("No image")

@@ -262,22 +262,25 @@ class MainActivity : ComponentActivity() {
 //                val canvasQuadrantSize = size / 2F
                 try {
                     println("screen width = ${size.width.toInt()}, screen height = ${size.height.toInt()}")
-
+                    val ratio = quadroPodBody.width / size.width
+                    println("ratio = $ratio")
                     drawImage(
                         image = quadroPodBody,
 //                        topLeft = Offset(0F, 0F),
                         dstSize = IntSize(size.width.toInt(), size.height.toInt())
                     )
                     val arm1 = arms[0]
+                    //todo разобраться с углом, чтобы он зависел от меньшего размера катета и быстрее поворачивал конечность
                     armRotate(
+                        ratio,
                         1,
                         0F,
                         0F,
                         arm1,
-                        startPointXArray[0],
-                        startPointYArray[0],
-                        offsetXArray[0],
-                        offsetYArray[0],
+                        startPointXArray[0] / ratio,
+                        startPointYArray[0]/ ratio,
+                        offsetXArray[0]/ ratio,
+                        offsetYArray[0]/ ratio,
                         rotatePoints[0],
                         degsForArms[0]
                     ){x-> degsForArms[0]=x }

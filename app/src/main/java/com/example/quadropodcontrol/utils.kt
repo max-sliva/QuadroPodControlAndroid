@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.unit.IntSize
 import com.example.quadropodcontrol.BluetoothWork
 import com.example.quadropodcontrol.R
 import kotlin.math.atan
@@ -81,6 +82,7 @@ fun angle(
 }
 
 fun DrawScope.armRotate(
+    ratio: Float,
     armNumber: Int,
     x0: Float,
     y0: Float,
@@ -109,10 +111,11 @@ fun DrawScope.armRotate(
     if (armNumber == 1) { //для arm1
 //        angleForServoArm(degs, armNumber)
         if (degs <= 65 && degs > -85 && startPointX + offsetX < armRotatePointX)
-            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat(), rotatePoints.second.toFloat())) {
+            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
                 drawImage(
                     image = arm,
-                    topLeft = Offset(x0, y0)
+                    dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt())
+//                    topLeft = Offset(x0, y0)
                 )
             } else
 //                        if (degs >=60)
