@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 //import androidx.compose.material.DropdownMenu
 //import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.DropdownMenu
@@ -30,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,17 +35,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.core.graphics.blue
 import androidx.core.graphics.get
 import androidx.core.graphics.green
-import androidx.core.graphics.red
 import armRotate
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 //import curLegBody
@@ -114,7 +110,7 @@ class MainActivity : ComponentActivity() {
 
         var bltList = listOf<String>() //список имен устройств
         val bltWork = BluetoothWork(LocalContext.current)
-        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
+//        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
         var pairedDevices = remember { mutableSetOf<BluetoothDevice>() }
         pairedDevices = bltWork.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
         var socketToDevice: BluetoothSocket? by remember { mutableStateOf(null) }
@@ -156,6 +152,7 @@ class MainActivity : ComponentActivity() {
             degsForLegs.add(0F)
         }
         var startPointX by remember { mutableStateOf(0f) }
+        var ratio by remember {   mutableStateOf(0f)     }
         var startPointY by remember { mutableStateOf(0f) }
         val openDialog = remember { mutableStateOf(false) }
         var curArm by remember { mutableStateOf(-1) }
@@ -185,6 +182,7 @@ class MainActivity : ComponentActivity() {
 //                    curSerialPort.openPort()
                 }
             }
+//            val ratio = quadroPodBody.width / size.width
             Canvas(modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
@@ -201,7 +199,11 @@ class MainActivity : ComponentActivity() {
                             startPointY = touch.y
                             offsetX = 0F //сбрасываем оффсеты, чтобы нормально двигать ногу
                             offsetY = 0F
-                            var number = getArmNumber(startPointX, quadroPodBody, startPointY)
+//                            val ratio = quadroPodBody.width / size.width
+                            println("ratio in dragStart = $ratio")
+
+                            var number =
+                                getArmNumber(startPointX, quadroPodBody, startPointY, ratio)
                             startPointXArray[number] = startPointX
                             startPointYArray[number] = startPointY
                             offsetXArray[number] = offsetX
@@ -214,10 +216,13 @@ class MainActivity : ComponentActivity() {
                             offsetX += dragAmount.x
                             offsetY += dragAmount.y
                             var number = 0
+//                            val ratio = quadroPodBody.width / size.width
+                            println("ratio in dragStart = $ratio")
                             number = getArmNumber(
                                 startPointX,
                                 quadroPodBody,
-                                startPointY
+                                startPointY,
+                                ratio
                             )    //для leg4
                             offsetXArray[number] += dragAmount.x
                             offsetYArray[number] += dragAmount.y
@@ -225,7 +230,13 @@ class MainActivity : ComponentActivity() {
                         onDragEnd = {
 //                            println("angle on drag end = $degs")
 //                           angleOnDragEnd = degs
-                            val number = getArmNumber(startPointX, quadroPodBody, startPointY)
+//                            val ratio = quadroPodBody.width / size.width
+                            val number = getArmNumber(
+                                startPointX,
+                                quadroPodBody,
+                                startPointY,
+                                ratio
+                            )
                             if (curDeviceName != "") writeArmAngleToArduino(
                                 bltWork,
                                 socketToDevice!!,
@@ -259,15 +270,20 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             ) {
+
 //                val canvasQuadrantSize = size / 2F
                 try {
                     println("screen width = ${size.width.toInt()}, screen height = ${size.height.toInt()}")
-                    val ratio = quadroPodBody.width / size.width
+                    ratio = (quadroPodBody.width / (size.width / 1.5)).toFloat()
+//                    quadroPodBody
+                    val xOffset = (size.width - quadroPodBody.width/ ratio) / 2
+                    val yOffset = (size.height - quadroPodBody.height/ ratio) / 2
                     println("ratio = $ratio")
                     drawImage(
                         image = quadroPodBody,
 //                        topLeft = Offset(0F, 0F),
-                        dstSize = IntSize(size.width.toInt(), size.height.toInt())
+                        dstSize = IntSize((size.width/1.5).toInt(), (size.height/1.5).toInt()),
+                        dstOffset = IntOffset(x= xOffset.toInt(), y = yOffset.toInt())
                     )
                     val arm1 = arms[0]
                     //todo разобраться с углом, чтобы он зависел от меньшего размера катета и быстрее поворачивал конечность
@@ -275,7 +291,7 @@ class MainActivity : ComponentActivity() {
                         ratio,
                         1,
                         0F,
-                        0F,
+                        0F-50,
                         arm1,
                         startPointXArray[0] / ratio,
                         startPointYArray[0]/ ratio,
@@ -285,22 +301,23 @@ class MainActivity : ComponentActivity() {
                         degsForArms[0]
                     ){x-> degsForArms[0]=x }
 //                    armRotate(0F,0F,arm1, startPointX, startPointY, offsetX, offsetY, rotatePoints)
-//                    val arm2 = arms[1]
+                    val arm2 = arms[1]
 ////                    val x0ForArm2 = rotatePoints[1].first
 ////                    val y0ForArm2 = rotatePoints[1].second-rotatePoints[0].second
-//                    val y0ForArm2 = rotatePoints[1].second - 80 //позиционируем вторую лапу
-//                    armRotate(
-//                        2,
-//                        0F,
-//                        y0ForArm2.toFloat(),
-//                        arm2,
-//                        startPointXArray[1],
-//                        startPointYArray[1],
-//                        offsetXArray[1],
-//                        offsetYArray[1],
-//                        rotatePoints[1],
-//                        degsForArms[1]
-//                    ){x-> degsForArms[1]=x }
+                    val y0ForArm2 = rotatePoints[1].second/ratio+260 //позиционируем вторую лапу
+                    armRotate(
+                        ratio,
+                        2,
+                        0F,
+                        y0ForArm2,
+                        arm2,
+                        startPointXArray[1]/ ratio,
+                        startPointYArray[1]/ ratio,
+                        offsetXArray[1]/ ratio,
+                        offsetYArray[1]/ ratio,
+                        rotatePoints[1],
+                        degsForArms[1]
+                    ){x-> degsForArms[1]=x }
 //                    val arm3 = arms[2]
 //                    val x0ForArm3 = rotatePoints[2].first - 40 //позиционируем третью лапу
 //                    armRotate(
@@ -347,18 +364,22 @@ class MainActivity : ComponentActivity() {
 //        val sapDevices: List<BluetoothDevice>,
 //    )
     private fun getArmNumber(
-        startPointX: Float,
-        quadroPodBody: ImageBitmap,
-        startPointY: Float
-    ): Int {
+    startPointX: Float,
+    quadroPodBody: ImageBitmap,
+    startPointY: Float,
+    ratio: Float
+): Int {
         var number = 0
-        if (startPointX < quadroPodBody.width / 2 && startPointY < quadroPodBody.height / 2)
+        val width = quadroPodBody.width / ratio
+        val height = quadroPodBody.height / ratio
+
+        if (startPointX < width / 2 && startPointY < height / 2)
             number = 0 //для leg1
-        else if (startPointX < quadroPodBody.width / 2 && startPointY > quadroPodBody.height / 2)
+        else if (startPointX < width / 2 && startPointY > height / 2)
             number = 1 //для leg2
-        else if (startPointX > quadroPodBody.width / 2 && startPointY < quadroPodBody.height / 2)
+        else if (startPointX > width / 2 && startPointY < height / 2)
             number = 2   //для leg3
-        else if (startPointX > quadroPodBody.width / 2 && startPointY > quadroPodBody.height / 2)
+        else if (startPointX > width / 2 && startPointY > height / 2)
             number = 3
         return number
     }

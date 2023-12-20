@@ -112,7 +112,7 @@ fun DrawScope.armRotate(
     if (armNumber == 1) { //для arm1
 //        angleForServoArm(degs, armNumber)
         if (degs <= 65 && degs > -85 && startPointX + offsetX < armRotatePointX)
-            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio -40)) {
                 drawImage(
                     image = arm,
                     dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
@@ -122,7 +122,7 @@ fun DrawScope.armRotate(
             } else
 //                        if (degs >=60)
             if (startPointY + offsetY > armRotatePointY)
-                rotate(degrees = -65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+                rotate(degrees = -65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio-40)) {
                     drawImage(
                         image = arm,
 //                        topLeft = Offset(x0, y0)
@@ -132,7 +132,7 @@ fun DrawScope.armRotate(
                 }
             else
                 if (startPointY + offsetY < armRotatePointY)
-                    rotate(degrees = 85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+                    rotate(degrees = 85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio-40)) {
                         drawImage(
                             image = arm,
                             dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
@@ -142,7 +142,7 @@ fun DrawScope.armRotate(
     } else if (armNumber == 2) {
 //        println("startPointY = $startPointY, offsetY = $offsetY, arm1RotatePointY +y0= ${armRotatePointY + y0}")
         if (degs >= -65 && degs <= 85 && startPointX + offsetX < armRotatePointX)
-            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+            rotate(degrees = -degs, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio+260)) {
                 drawImage(
                     image = arm,
                     dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
@@ -150,7 +150,7 @@ fun DrawScope.armRotate(
                 )
             }
         else if ((startPointY + offsetY) < (armRotatePointY + y0)) {
-            rotate(degrees = 65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+            rotate(degrees = 65F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio+260)) {
                 drawImage(
                     image = arm,
                     dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
@@ -158,7 +158,7 @@ fun DrawScope.armRotate(
                 )
             }
         } else if ((startPointY + offsetY) > (armRotatePointY + y0))
-            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio)) {
+            rotate(degrees = -85F, Offset(rotatePoints.first.toFloat()/ ratio, rotatePoints.second.toFloat()/ ratio+260)) {
                 drawImage(
                     image = arm,
                     dstSize = IntSize((arm.width/ratio).toInt(), (arm.height/ratio).toInt()),
