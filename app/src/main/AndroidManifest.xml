@@ -15,6 +15,17 @@
         android:theme="@style/Theme.QuadroPodControl"
         tools:targetApi="31">
         <activity
+            android:name=".LauncherActivity"
+            android:exported="true"
+            android:label="@string/title_activity_launcheк"
+            android:theme="@style/Theme.QuadroPodControl">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".SecondActivity"
             android:exported="false"
             android:label="@string/title_activity_second"
