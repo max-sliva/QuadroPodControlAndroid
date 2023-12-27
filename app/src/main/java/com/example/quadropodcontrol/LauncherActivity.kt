@@ -56,7 +56,7 @@ fun Greeting(text: String="Выберите режим:", modifier: Modifier = M
         )
         Button(
             onClick = {
-                val newAct = Intent(mContext, MainActivity::class.java) //описан ниже
+                val newAct = Intent(mContext, ArmsAndLegsControl::class.java) //описан ниже
 //                newAct.putExtra("angle", degsForLegs[number])
 //                newAct.putExtra("legNumber", number)
                 mContext.startActivity(newAct)
