@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_background.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/drawable/ic_launcher_foreground.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/values/colors.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/values/strings.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/values/themes.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/xml/backup_rules.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/res/xml/data_extraction_rules.xml;C:/AndroidProjects/QuadroPodControlAndroid/app/src/main/AndroidManifest.xml" />
+  </component>
+</project>

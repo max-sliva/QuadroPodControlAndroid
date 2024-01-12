@@ -7,18 +7,103 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import java.io.IOException
 import java.util.UUID
 
-class BluetoothWork(localContext: Context) {
+@Composable
+fun BluetoothDropdownList(itemsInitial: List<String>, onUpdate: (x: String) -> Unit) { //комбобокс для выбора компорта для подключения к Arduino
+    var expanded by remember { mutableStateOf(false) }
+//    val items = listOf("com1", "com2", "com3")
+//    val disabledValue = "B"
+    var items = remember { mutableStateListOf<String>() }
+    itemsInitial.forEach {
+        if (!items.contains(it))items.add(it)
+    }
+    var selectedIndex by remember { mutableStateOf(-1) }
+    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+        Text( //заголовок комбобокса
+            if (selectedIndex<0) "Выберите устройство: ▼" //если еще ничего не выбрано
+            else items[selectedIndex], //если выбрано
+            modifier = Modifier.clickable(onClick = { //при нажатии на текст раскрываем комбобокс
+//                val tempPortList = SerialPortList.getPortNames().toList() //получаем активные порты
+//                println("SerialPortList = $tempPortList")
+//                tempPortList.forEach {//добавляем новые порты к списку
+//                    if (!items.contains(it))items.add(it)
+//                }
+//                items.forEach{//убираем отключенные порты
+//                    if (!tempPortList.contains(it)) {
+////                        println("$it not in SerialPortList")
+//                        items.remove(it)
+//                    }
+//                }
+//                val bltList =
+                expanded = true
+            })
+        )
+        DropdownMenu( //сам выпадающий список для комбобокса
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+        ) {
+            items.forEachIndexed { index, s -> //заполняем элементы выпадающего списка
+                DropdownMenuItem(
+//                   Text(text = s),
+                    text = { Text(text = s ) },
+                    onClick = { //обработка нажатия на порт
+                        selectedIndex = index
+                        expanded = false
+                        onUpdate(s)
+                        println("selected = $s")
+                    }
+                )
+//                {
+////                    val disabledText = if (s == disabledValue) {
+////                        " (Disabled)"
+////                    } else {
+////                        ""
+////                    }
+//                    Text(text = s )
+//                }
+            }
+        }
+    }
+}
+class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivity) {
     private var context: Context
     private var bltList = listOf<String>()
     private var pairedDevices: Set<BluetoothDevice>? = null
 
     init{
         context = localContext
-
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            println("Should Requesting Bluetooth permission")
+                ActivityCompat.requestPermissions(myLauncherActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 2)
+//            return emptyList()
+        }
     }
 
     fun getBluetoothDevices( onUpdate: (list: List<String>) -> Unit): Set<BluetoothDevice>? {
@@ -78,6 +163,7 @@ class BluetoothWork(localContext: Context) {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 println("Should Requesting Bluetooth permission")
+//                ActivityCompat.requestPermissions(::LauncherActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_CODE)
 //            return emptyList()
             }
             // Get the BluetoothSocket for the device

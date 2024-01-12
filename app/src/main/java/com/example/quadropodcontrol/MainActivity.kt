@@ -7,26 +7,17 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentSize
 //import androidx.compose.material.DropdownMenu
 //import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -35,10 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
@@ -109,7 +98,7 @@ class MainActivity : ComponentActivity() {
 //        val imageHeight = quadroPodBody.width * LocalDensity.current.density
 
         var bltList = listOf<String>() //список имен устройств
-        val bltWork = BluetoothWork(LocalContext.current)
+        val bltWork = BluetoothWork(LocalContext.current, MyLauncherActivity())
 //        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
         var pairedDevices = remember { mutableSetOf<BluetoothDevice>() }
         pairedDevices = bltWork.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
@@ -172,7 +161,7 @@ class MainActivity : ComponentActivity() {
 //            ) { x -> //ф-ия обратного вызова для запоминания угла
 //                degsForLegs[curArm] = x
 //            } //для вызова окна с нужной leg
-            DropdownDemo(bltList){ x-> //лямбда для ф-ии обратного вызова
+            BluetoothDropdownList(bltList){ x-> //лямбда для ф-ии обратного вызова
                 curDeviceName=x
                 if (curDeviceName!=""){
                     val curDevice: BluetoothDevice = bltWork.getDeviceByName(curDeviceName)
@@ -614,66 +603,5 @@ class MainActivity : ComponentActivity() {
         armImagesArray = armImagesArray.plus(arm.asImageBitmap())
 
         return armImagesArray
-    }
-}
-
-@Composable
-fun DropdownDemo(itemsInitial: List<String>, onUpdate: (x: String) -> Unit) { //комбобокс для выбора компорта для подключения к Arduino
-    var expanded by remember { mutableStateOf(false) }
-//    val items = listOf("com1", "com2", "com3")
-//    val disabledValue = "B"
-    var items = remember { mutableStateListOf<String>() }
-    itemsInitial.forEach {
-        if (!items.contains(it))items.add(it)
-    }
-    var selectedIndex by remember { mutableStateOf(-1) }
-    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
-        Text( //заголовок комбобокса
-            if (selectedIndex<0) "Выберите устройство: ▼" //если еще ничего не выбрано
-            else items[selectedIndex], //если выбрано
-            modifier = Modifier.clickable(onClick = { //при нажатии на текст раскрываем комбобокс
-//                val tempPortList = SerialPortList.getPortNames().toList() //получаем активные порты
-//                println("SerialPortList = $tempPortList")
-//                tempPortList.forEach {//добавляем новые порты к списку
-//                    if (!items.contains(it))items.add(it)
-//                }
-//                items.forEach{//убираем отключенные порты
-//                    if (!tempPortList.contains(it)) {
-////                        println("$it not in SerialPortList")
-//                        items.remove(it)
-//                    }
-//                }
-//                val bltList =
-                expanded = true
-            })
-        )
-        DropdownMenu( //сам выпадающий список для комбобокса
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-        ) {
-            items.forEachIndexed { index, s -> //заполняем элементы выпадающего списка
-                DropdownMenuItem(
-//                   Text(text = s),
-                    text = {Text(text = s )},
-                    onClick = { //обработка нажатия на порт
-                        selectedIndex = index
-                        expanded = false
-                        onUpdate(s)
-                        println("selected = $s")
-                    }
-                )
-//                {
-////                    val disabledText = if (s == disabledValue) {
-////                        " (Disabled)"
-////                    } else {
-////                        ""
-////                    }
-//                    Text(text = s )
-//                }
-            }
-        }
     }
 }
