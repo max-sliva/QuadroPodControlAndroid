@@ -32,14 +32,14 @@ class MyLauncherActivity : ComponentActivity() {
 
         setContent {
             var bltList = listOf<String>() //список имен устройств
-            val bltWork = BluetoothWork(LocalContext.current, this)
+            val bltWork:BluetoothWork? = BluetoothWork(LocalContext.current, this)
 //        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
             var pairedDevices = remember { mutableSetOf<BluetoothDevice>() }
-            pairedDevices = bltWork.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
+            pairedDevices = bltWork?.getBluetoothDevices() { list-> bltList=list} as MutableSet<BluetoothDevice>  //сами устройства
             var socketToDevice: BluetoothSocket? by remember { mutableStateOf(null) }
             println("blt devices = ${bltList}")
             var curDeviceName by remember { mutableStateOf("")        }
-
+            var deviceIsChosen by remember { mutableStateOf(false) }
             QuadroPodControlTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -56,13 +56,23 @@ class MyLauncherActivity : ComponentActivity() {
                             if (curDeviceName!=""){
                                 val curDevice: BluetoothDevice = bltWork.getDeviceByName(curDeviceName)
                                 println("curDevice = ${curDevice}")
-                                socketToDevice = bltWork.connectToBluetoothDevice(curDevice)!!
+                                try {
+//                                    bltWork.connectToBluetoothDevice(curDevice)!!
+                                    socketToDevice = bltWork.connectToBluetoothDevice(curDevice)!!
+                                } catch (e: NullPointerException){
+                                    //socketToDevice = null
+                                    if (socketToDevice==null)  println("-----!!  device is null  !!------------")
+                                    e.printStackTrace()
+                                }
+                                println("after choosing device")
+//                                else
+                                if (socketToDevice!=null) deviceIsChosen = true
 //                    curSerialPort = SerialPort(curComPort)
 //                    curSerialPort.openPort()
                             }
                         }
-                        //todo сделать неактивными кнопки, если не выбрано подключение к роботу по bluetooth
-                        Greeting("Выберите режим:")
+                        println("between views")
+                        Greeting(deviceIsChosen,"Выберите режим:")
                     }
                 }
             }
@@ -71,18 +81,18 @@ class MyLauncherActivity : ComponentActivity() {
 }
 //@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(text: String="Выберите режим:", modifier: Modifier = Modifier) {
+fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режим:") {
     val mContext = LocalContext.current
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "$text!",
-            modifier = modifier
+            text = "$text",
+            modifier = Modifier
         )
         Button(
             onClick = {
@@ -91,6 +101,7 @@ fun Greeting(text: String="Выберите режим:", modifier: Modifier = M
 //                newAct.putExtra("legNumber", number)
                 mContext.startActivity(newAct)
             },
+            enabled = deviceIsChosen,
             modifier = Modifier
 //                .padding(8.dp)
 //                .border(2.dp, Color.Blue,
@@ -100,6 +111,7 @@ fun Greeting(text: String="Выберите режим:", modifier: Modifier = M
         }
         Button(
             onClick = { },
+            enabled = deviceIsChosen,
             modifier = Modifier
 //                .padding(8.dp)
 //                .border(2.dp, Color.Blue,
@@ -109,10 +121,10 @@ fun Greeting(text: String="Выберите режим:", modifier: Modifier = M
         }
     }}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    QuadroPodControlTheme {
-        Greeting("Android")
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    QuadroPodControlTheme {
+//        Greeting(deviceIsChosen, "Android")
+//    }
+//}

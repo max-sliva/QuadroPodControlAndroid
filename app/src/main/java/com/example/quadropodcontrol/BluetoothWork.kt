@@ -29,18 +29,21 @@ import java.io.IOException
 import java.util.UUID
 
 @Composable
-fun BluetoothDropdownList(itemsInitial: List<String>, onUpdate: (x: String) -> Unit) { //комбобокс для выбора компорта для подключения к Arduino
+fun BluetoothDropdownList(
+    itemsInitial: List<String>,
+    onUpdate: (x: String) -> Unit?
+) { //комбобокс для выбора компорта для подключения к Arduino
     var expanded by remember { mutableStateOf(false) }
 //    val items = listOf("com1", "com2", "com3")
 //    val disabledValue = "B"
     var items = remember { mutableStateListOf<String>() }
     itemsInitial.forEach {
-        if (!items.contains(it))items.add(it)
+        if (!items.contains(it)) items.add(it)
     }
     var selectedIndex by remember { mutableStateOf(-1) }
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
         Text( //заголовок комбобокса
-            if (selectedIndex<0) "Выберите устройство: ▼" //если еще ничего не выбрано
+            if (selectedIndex < 0) "Выберите устройство: ▼" //если еще ничего не выбрано
             else items[selectedIndex], //если выбрано
             modifier = Modifier.clickable(onClick = { //при нажатии на текст раскрываем комбобокс
 //                val tempPortList = SerialPortList.getPortNames().toList() //получаем активные порты
@@ -68,7 +71,7 @@ fun BluetoothDropdownList(itemsInitial: List<String>, onUpdate: (x: String) -> U
             items.forEachIndexed { index, s -> //заполняем элементы выпадающего списка
                 DropdownMenuItem(
 //                   Text(text = s),
-                    text = { Text(text = s ) },
+                    text = { Text(text = s) },
                     onClick = { //обработка нажатия на порт
                         selectedIndex = index
                         expanded = false
@@ -88,12 +91,13 @@ fun BluetoothDropdownList(itemsInitial: List<String>, onUpdate: (x: String) -> U
         }
     }
 }
+
 class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivity) {
     private var context: Context
     private var bltList = listOf<String>()
     private var pairedDevices: Set<BluetoothDevice>? = null
 
-    init{
+    init {
         context = localContext
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -101,14 +105,19 @@ class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivit
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             println("Should Requesting Bluetooth permission")
-                ActivityCompat.requestPermissions(myLauncherActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 2)
+            ActivityCompat.requestPermissions(
+                myLauncherActivity,
+                arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
+                2
+            )
 //            return emptyList()
         }
     }
 
-    fun getBluetoothDevices( onUpdate: (list: List<String>) -> Unit): Set<BluetoothDevice>? {
+    fun getBluetoothDevices(onUpdate: (list: List<String>) -> Unit): Set<BluetoothDevice>? {
 
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
         if (!bluetoothAdapter.isEnabled) {
             println("Bluetooth is not enabled")
@@ -145,16 +154,22 @@ class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivit
         }
         var socket: BluetoothSocket? = null
 //        if (device.bondState!= BluetoothDevice.BOND_BONDED) {
-            // Create a BluetoothSocket for the device
-            socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+        // Create a BluetoothSocket for the device
+        socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
 
-            // Attempt to connect to the device
-            socket.connect()
-            println("device is connected")
-            // Do something with the socket, such as send or receive data
+        // Attempt to connect to the device
+        try {
+            socket?.connect()
+        } catch (e:IOException){
+            println("-----!!in BluetoothWork  device is null  !!------------")
+            return null
+        }
+        println("device is connected")
+        // Do something with the socket, such as send or receive data
 //        }
         return socket
     }
+
     fun sendDataToBluetoothDevice(socket: BluetoothSocket, data: String) {
         try {
             if (ActivityCompat.checkSelfPermission(
@@ -192,7 +207,7 @@ class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivit
 //            return emptyList()
         }
         val curDevice = pairedDevices?.filter {
-            it.name==curDeviceName
+            it.name == curDeviceName
         }?.first()
 
         return curDevice!!
