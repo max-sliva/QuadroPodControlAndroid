@@ -11,26 +11,47 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 
 class MyLauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+//        val localContext = this
+//        GlobalScope.launch{
+//            imageWork(localContext)
+//        }
         setContent {
+            var loading by remember { mutableStateOf(true) } //для обозначения окончания загрузки ресурсов
+            val coroutineScope = rememberCoroutineScope()
+            LaunchedEffect(key1 = Unit) {
+                coroutineScope.async {
+                    withContext(Dispatchers.Default) {
+                        myTimer(2)
+                    }
+                    loading = false
+                }
+            }
+            println("Timer launched")
             var bltList = listOf<String>() //список имен устройств
             val bltWork:BluetoothWork? = BluetoothWork(LocalContext.current, this)
 //        Toast.makeText(LocalContext.current, "get devices", Toast.LENGTH_LONG).show()
@@ -72,7 +93,7 @@ class MyLauncherActivity : ComponentActivity() {
                             }
                         }
                         println("between views")
-                        Greeting(deviceIsChosen,"Выберите режим:")
+                        Greeting(deviceIsChosen = true,"Выберите режим:", loading) //убрать deviceIsChosen = true при реальном выборе устройства
                     }
                 }
             }
@@ -81,7 +102,7 @@ class MyLauncherActivity : ComponentActivity() {
 }
 //@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режим:") {
+fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режим:", loading: Boolean) {
     val mContext = LocalContext.current
     Column(
         modifier = Modifier
@@ -101,7 +122,7 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
 //                newAct.putExtra("legNumber", number)
                 mContext.startActivity(newAct)
             },
-            enabled = deviceIsChosen,
+            enabled = deviceIsChosen && !loading,
             modifier = Modifier
 //                .padding(8.dp)
 //                .border(2.dp, Color.Blue,
@@ -111,7 +132,7 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
         }
         Button(
             onClick = { },
-            enabled = deviceIsChosen,
+            enabled = deviceIsChosen && !loading,
             modifier = Modifier
 //                .padding(8.dp)
 //                .border(2.dp, Color.Blue,
@@ -119,7 +140,26 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
         ) {
             Text(text = "Управление перемещением")
         }
-    }}
+//        var loading by remember { mutableStateOf(true) }
+
+//        Button(onClick = { loading = !loading }) {
+//            if (!loading) Text("Start loading")
+//            else Text("Stop loading")
+//        }
+
+        if (loading)
+            CircularProgressIndicator(
+                modifier = Modifier.width(64.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+//        Button(onClick = { loading = false }, enabled = !loading) {
+//            Text("Stop loading")
+//        }
+
+
+    }
+}
 
 //@Preview(showBackground = true)
 //@Composable
