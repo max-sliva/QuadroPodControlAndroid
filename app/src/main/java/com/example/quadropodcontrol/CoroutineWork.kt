@@ -8,11 +8,11 @@ import androidx.core.graphics.green
 import kotlinx.coroutines.*
 
 var end = 0
-fun myTimer(n: Int) =  runBlocking{
+fun myTimer(n: Long) =  runBlocking{
     println("Starting timer $n...")
 //    withContext(Dispatchers.IO) {
         // Perform some long-running task here
-        delay(5000) // Pause the coroutine for 3 seconds
+        delay(1000*n) // Pause the coroutine for 3 seconds
 //    }
     println("Timer finished!")
     end = 1

@@ -19,6 +19,7 @@
             android:name=".ArmsAndLegsControl"
             android:exported="false"
             android:label="@string/title_activity_arms_and_legs_control"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.QuadroPodControl" />
         <activity
             android:name=".MyLauncherActivity"

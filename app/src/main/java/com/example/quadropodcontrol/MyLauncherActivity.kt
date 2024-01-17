@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
 
 class MyLauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,9 +48,10 @@ class MyLauncherActivity : ComponentActivity() {
             LaunchedEffect(key1 = Unit) {
                 coroutineScope.async {
                     withContext(Dispatchers.Default) {
-                        myTimer(2)
+                        myTimer(1)
                     }
                     loading = false
+                    Toast.makeText(applicationContext, "Timer stopped", Toast.LENGTH_LONG).show()
                 }
             }
             println("Timer launched")
