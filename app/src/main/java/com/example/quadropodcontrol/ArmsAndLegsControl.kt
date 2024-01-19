@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,8 +37,14 @@ class ArmsAndLegsControl : ComponentActivity() {
                 contentDescription = "Image",
                 modifier = Modifier.fillMaxSize()
             )
+            val back = ContextCompat.getDrawable(this, R.drawable.back)?.toBitmap()
+            var showLeg by remember { mutableStateOf(false) }
+
             val arm1 = ContextCompat.getDrawable(this, R.drawable.arm1)?.toBitmap()
             val arm2 = ContextCompat.getDrawable(this, R.drawable.arm2)?.toBitmap()
+            val arm3 = ContextCompat.getDrawable(this, R.drawable.arm3)?.toBitmap()
+            val arm4 = ContextCompat.getDrawable(this, R.drawable.arm4)?.toBitmap()
+
             val width = arm1!!.width
             val height = arm1.height
             var foundGreen = false
@@ -57,47 +65,52 @@ class ArmsAndLegsControl : ComponentActivity() {
 //                if (foundGreen) break
 //            }
 //            RotatedImage(bitmap = arm1)
-            TransformableSample("arm1", arm1, xGreenOnArm, yGreenOnArm, LocalContext.current)
-            TransformableSample("arm2", arm2, xGreenOnArm, yGreenOnArm, LocalContext.current)
-            //todo add all arms
-//            QuadroPodControlTheme {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colorScheme.background
-//                ) {
-////                    Greeting2("Android")
-//                    Image(
-//                        bitmap = bitmap?.asImageBitmap()!!,
-//                        contentDescription = "Image",
-//                        modifier = Modifier.fillMaxSize()
-//                    )
-//                }
-//            }
+            arrayOf(arm1, arm2, arm3, arm4).forEachIndexed { index, bitmap ->
+                TransformableSample("arm${index+1}", bitmap, LocalContext.current){x-> showLeg = x}
+            }
+            if (showLeg) {
+                LegMoving(back){x-> showLeg = x}
+            }
         }
     }
+}
+
+
+@Composable
+private fun LegMoving(back: Bitmap?, onXClick: (x: Boolean) -> Unit) {
+    Image(
+        bitmap = back?.asImageBitmap()!!,
+        contentDescription = "Image",
+        modifier = Modifier.fillMaxSize()
+    )
+    Button(onClick = { onXClick(false) }) {
+        Text(text = "x")
+    }
+    //todo add legs
 }
 
 @Composable
 private fun TransformableSample(
     armName: String,
     bitmapSrc: Bitmap?,
-    xGreenOnArm: Float,
-    yGreenOnArm: Float,
-    current: Context
+//    xGreenOnArm: Float,
+//    yGreenOnArm: Float,
+    current: Context,
+    onClick:(x: Boolean) -> Unit
 ) {
     // set up all transformation states
-//    var scale by remember { mutableStateOf(1f) }
+//    var showLeg by remember { mutableStateOf(false) }
     var rotation by remember { mutableStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val scale = 0.5f
     var transformOrigin: TransformOrigin? = null
     var translateY = -210F
+    var translateX = -440F
     var rangeUp = 790F
     var rangDown = -400F
     when (armName) {
         "arm1"->  {
-            transformOrigin = TransformOrigin(0.9f, 0.7f)
+            transformOrigin = TransformOrigin(0.9f, 0.7f) //это определяет точку поворота, первый параметр по X, второй - по Y
             translateY = -210F
             rangeUp = 800F
             rangDown = -400F
@@ -109,17 +122,30 @@ private fun TransformableSample(
             rangDown = -800F
         }
         "arm3"->  {
-            transformOrigin = TransformOrigin(0.9f, 0.7f)
+            transformOrigin = TransformOrigin(0.1f, 0.7f)
+            translateX = 1120F
+            rangeUp = 400F
+            rangDown = -800F
         }
         "arm4"->  {
-            transformOrigin = TransformOrigin(0.9f, 0.7f)
+            transformOrigin = TransformOrigin(0.1f, 0.3f)
+            translateX = 1130F
+            translateY = 530F
+            rangeUp = 800F
+            rangDown = -400F
         }
     }
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange
         var temp = rotation
-        temp+=-offsetChange.y
-        if (temp in rangDown..rangeUp) rotation += -offsetChange.y
+        if (armName!="arm3" && armName!="arm4") {
+            temp += -offsetChange.y
+            if (temp in rangDown..rangeUp) rotation += -offsetChange.y
+        }
+        else {
+            temp+=offsetChange.y
+            if (temp in rangDown..rangeUp) rotation += offsetChange.y
+        }
         println("rotation = $rotation")
 //        offset += offsetChange
     }
@@ -133,12 +159,16 @@ private fun TransformableSample(
                 scaleX = scale,
                 scaleY = scale,
                 rotationZ = rotation / 10,
-                translationX = -440F,
+                translationX = translateX,
                 translationY = translateY
             )
             .transformable(state = state)
             .clickable {
-                Toast.makeText(current, "$armName clicked", Toast.LENGTH_LONG).show()
+                Toast
+                    .makeText(current, "$armName clicked", Toast.LENGTH_LONG)
+                    .show()
+//                showLeg = true
+                onClick(true)
             }
     )
 }

@@ -47,9 +47,9 @@ class MyLauncherActivity : ComponentActivity() {
             val coroutineScope = rememberCoroutineScope()
             LaunchedEffect(key1 = Unit) {
                 coroutineScope.async {
-                    withContext(Dispatchers.Default) {
-                        myTimer(1)
-                    }
+//                    withContext(Dispatchers.Default) {
+//                        myTimer(1)
+//                    }
                     loading = false
                     Toast.makeText(applicationContext, "Timer stopped", Toast.LENGTH_LONG).show()
                 }
