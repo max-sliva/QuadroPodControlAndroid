@@ -113,7 +113,7 @@ private fun LegMoving(
             //            .size(1900.dp)
 
         )
-        LegRotaion(leg){}
+        LegRotaion(leg, armNumber){}
         Image(
             bitmap = legBody?.asImageBitmap()!!,
             contentDescription = "Image",
@@ -133,7 +133,7 @@ private fun LegMoving(
             //            .size(1900.dp)
 
         )
-        LegRotaion(leg){}
+        LegRotaion(leg, armNumber){}
     }
     Button(onClick = { onXClick(false) }) {
         Text(text = "x")
@@ -144,6 +144,7 @@ private fun LegMoving(
 private fun LegRotaion(
 //    legName: String,
     bitmapSrc: Bitmap?,
+    armNumber: Int,
 //    xGreenOnArm: Float,
 //    yGreenOnArm: Float,
 //    current: Context,
