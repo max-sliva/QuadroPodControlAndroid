@@ -39,7 +39,9 @@ class ArmsAndLegsControl : ComponentActivity() {
             )
             val back = ContextCompat.getDrawable(this, R.drawable.back)?.toBitmap()
             var showLeg by remember { mutableStateOf(false) }
-
+            var armNumber by remember {
+                mutableStateOf('0')
+            }
             val arm1 = ContextCompat.getDrawable(this, R.drawable.arm1)?.toBitmap()
             val arm2 = ContextCompat.getDrawable(this, R.drawable.arm2)?.toBitmap()
             val arm3 = ContextCompat.getDrawable(this, R.drawable.arm3)?.toBitmap()
@@ -66,10 +68,14 @@ class ArmsAndLegsControl : ComponentActivity() {
 //            }
 //            RotatedImage(bitmap = arm1)
             arrayOf(arm1, arm2, arm3, arm4).forEachIndexed { index, bitmap ->
-                TransformableSample("arm${index+1}", bitmap, LocalContext.current){x-> showLeg = x}
+                ArmRotation("arm${index+1}", bitmap, LocalContext.current)
+                { x, number ->
+                    showLeg = x
+                    armNumber = number
+                }
             }
             if (showLeg) {
-                LegMoving(back){x-> showLeg = x}
+                LegMoving(back, armNumber){x-> showLeg = x}
             }
         }
     }
@@ -77,26 +83,47 @@ class ArmsAndLegsControl : ComponentActivity() {
 
 
 @Composable
-private fun LegMoving(back: Bitmap?, onXClick: (x: Boolean) -> Unit) {
+private fun LegMoving(back: Bitmap?, armNumber: Char, onXClick: (x: Boolean) -> Unit) {
     Image(
         bitmap = back?.asImageBitmap()!!,
         contentDescription = "Image",
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+//            .width(Dp(2000f))
+//            .size(1900.dp)
+
     )
     Button(onClick = { onXClick(false) }) {
         Text(text = "x")
     }
+
     //todo add legs
 }
 
 @Composable
-private fun TransformableSample(
+private fun LegRotaion(
+    legName: String,
+    bitmapSrc: Bitmap?,
+//    xGreenOnArm: Float,
+//    yGreenOnArm: Float,
+    current: Context,
+    onRotate: (angle: Int)-> Unit
+){
+    Image(
+        bitmap = bitmapSrc?.asImageBitmap()!!,
+        contentDescription = "Image",
+        modifier = Modifier
+    )
+}
+
+@Composable
+private fun ArmRotation(
     armName: String,
     bitmapSrc: Bitmap?,
 //    xGreenOnArm: Float,
 //    yGreenOnArm: Float,
     current: Context,
-    onClick:(x: Boolean) -> Unit
+    onClick:(x: Boolean, number: Char) -> Unit
 ) {
     // set up all transformation states
 //    var showLeg by remember { mutableStateOf(false) }
@@ -168,7 +195,7 @@ private fun TransformableSample(
                     .makeText(current, "$armName clicked", Toast.LENGTH_LONG)
                     .show()
 //                showLeg = true
-                onClick(true)
+                onClick(true, armName.last())
             }
     )
 }
