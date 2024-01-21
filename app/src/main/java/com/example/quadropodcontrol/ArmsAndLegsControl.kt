@@ -113,6 +113,7 @@ private fun LegMoving(
             //            .size(1900.dp)
 
         )
+        //todo передавать в LegRotaion remember для хранения угла
         LegRotaion(leg, armNumber){}
         Image(
             bitmap = legBody?.asImageBitmap()!!,
@@ -150,26 +151,40 @@ private fun LegRotaion(
 //    current: Context,
     onRotate: (angle: Int)-> Unit
 ){
-    //todo доделать нормальное вращение для leg
     var rotation by remember { mutableStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val scale = 0.5f
-    var transformOrigin: TransformOrigin? = TransformOrigin(0.9f, 0.7f)
-    var translateY = -210F
-    var translateX = -440F
-    var rangeUp = 790F
-    var rangDown = -400F
+    var transformOrigin: TransformOrigin? = TransformOrigin(0.75f, 0.7f)
+    var translateX = -260F
+    var translateY = 50F
+    var rangeUp = 800F
+    var rangDown = -800F
+    if (armNumber==2) {
+        transformOrigin = TransformOrigin(0.85f, 0.6f)
+        translateX = 10F
+        translateY = 70F
+    }
+    if (armNumber==3) {
+        transformOrigin = TransformOrigin(0.25f, 0.7f)
+        translateX = 700F
+        translateY = 90F
+    }
+    if (armNumber==4) {
+        transformOrigin = TransformOrigin(0.25f, 0.6f)
+        translateX = 300F
+        translateY = 90F
+    }
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange
         var temp = rotation
-//        if (armName!="arm3" && armName!="arm4") {
+        if (armNumber in 1..2 ){
             temp += -offsetChange.y
             if (temp in rangDown..rangeUp) rotation += -offsetChange.y
-//        }
-//        else {
-//            temp+=offsetChange.y
-//            if (temp in rangDown..rangeUp) rotation += offsetChange.y
-//        }
+        }
+        else {
+            temp+=offsetChange.y
+            if (temp in rangDown..rangeUp) rotation += offsetChange.y
+        }
         println("rotation = $rotation")
 //        offset += offsetChange
     }
