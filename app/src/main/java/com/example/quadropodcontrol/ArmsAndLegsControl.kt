@@ -11,21 +11,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 
@@ -58,6 +59,7 @@ class ArmsAndLegsControl : ComponentActivity() {
             val leg3_body = ContextCompat.getDrawable(this, R.drawable.leg3_body_)?.toBitmap()
             val leg4_body = ContextCompat.getDrawable(this, R.drawable.leg4_body_)?.toBitmap()
             val legBodiesArray = arrayOf(leg1_body, leg2_body, leg3_body, leg4_body)
+            var legAnglesArray = remember { mutableStateListOf<Int>(0,0,0,0) }
             val width = arm1!!.width
             val height = arm1.height
             var foundGreen = false
@@ -87,7 +89,7 @@ class ArmsAndLegsControl : ComponentActivity() {
             }
 
             if (showLeg) {
-                LegMoving(back, legsArray[armNumber-1], legBodiesArray[armNumber-1], armNumber){ x-> showLeg = x}
+                LegMoving(back, legsArray[armNumber-1], legBodiesArray[armNumber-1], armNumber, legAnglesArray){ x-> showLeg = x}
             }
         }
     }
@@ -101,8 +103,11 @@ private fun LegMoving(
     leg: Bitmap?,
     legBody: Bitmap?,
     armNumber: Int,
+    legAnglesArray: SnapshotStateList<Int>,
     onXClick: (x: Boolean) -> Unit
 ) {
+//    var angle by remember { mutableIntStateOf(0) }
+//    angle = legAnglesArray[armNumber-1]
     if (armNumber%2 == 1) {
         Image(
             bitmap = back?.asImageBitmap()!!,
@@ -114,7 +119,7 @@ private fun LegMoving(
 
         )
         //todo передавать в LegRotaion remember для хранения угла
-        LegRotaion(leg, armNumber){}
+        LegRotaion(leg, armNumber, legAnglesArray) { /*x-> println(x) */}
         Image(
             bitmap = legBody?.asImageBitmap()!!,
             contentDescription = "Image",
@@ -134,9 +139,12 @@ private fun LegMoving(
             //            .size(1900.dp)
 
         )
-        LegRotaion(leg, armNumber){}
+        LegRotaion(leg, armNumber, legAnglesArray){}
     }
-    Button(onClick = { onXClick(false) }) {
+    Button(onClick = {
+            onXClick(false)
+          //  legAnglesArray[armNumber-1] =
+           }) {
         Text(text = "x")
     }
 }
@@ -146,12 +154,13 @@ private fun LegRotaion(
 //    legName: String,
     bitmapSrc: Bitmap?,
     armNumber: Int,
+    angle: SnapshotStateList<Int>,
 //    xGreenOnArm: Float,
 //    yGreenOnArm: Float,
 //    current: Context,
     onRotate: (angle: Int)-> Unit
 ){
-    var rotation by remember { mutableStateOf(0f) }
+    var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     val scale = 0.5f
     var transformOrigin: TransformOrigin? = TransformOrigin(0.75f, 0.7f)
@@ -185,6 +194,7 @@ private fun LegRotaion(
             temp+=offsetChange.y
             if (temp in rangDown..rangeUp) rotation += offsetChange.y
         }
+        angle[armNumber-1] = rotation.toInt()
         println("rotation = $rotation")
 //        offset += offsetChange
     }
@@ -197,7 +207,7 @@ private fun LegRotaion(
                 transformOrigin = transformOrigin!!,
                 scaleX = scale,
                 scaleY = scale,
-                rotationZ = rotation / 10,
+                rotationZ = (angle[armNumber-1] / 10).toFloat(),
                 translationX = translateX,
                 translationY = translateY
             )
