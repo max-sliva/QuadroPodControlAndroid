@@ -272,6 +272,30 @@ fun angleForServoArm(degs: Float, arm: Int): Int {
     return angle
 }
 
+
+//val originalRange = 0..100
+//val newRange = 0f..1f
+//
+//val originalValue = 50
+//val newValue = originalValue.toFloat().map(originalRange, newRange)
+//
+//println(newRange.contains(newValue))
+
+//fun convert(number: Int, original: IntRange, target: IntRange): Int {
+//    val ratio = number.toFloat() / (original.endInclusive - original.start)
+//    return (ratio * (target.endInclusive - target.start)).toInt()
+//}
+
+fun mapRange(number: Int, prevRange: IntRange, newRange: IntRange) : Int {
+    val ratio = number.toFloat() / (prevRange.last - prevRange.first)
+    return (ratio * (newRange.last - newRange.first) + newRange.first).toInt()
+}
+
+fun convert(number: Int, original: IntRange, target: IntRange): Int {
+    val ratio = (number - original.start).toFloat() / (original.endInclusive - original.start)
+    return (ratio * (target.endInclusive - target.start)).toInt()
+}
+
 fun angleForServoLeg(degs: Float, leg: Int): Int {
     var angle = 0
 
