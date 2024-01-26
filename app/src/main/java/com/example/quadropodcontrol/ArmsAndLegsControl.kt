@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import convertAngle
+import writeArmAngleToArduino
 
 class ArmsAndLegsControl : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -272,7 +274,9 @@ private fun ArmRotation(
             temp+=offsetChange.y
             if (temp in rangDown..rangeUp) rotation += offsetChange.y
         }
-        println("rotation = $rotation")
+        val angle = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
+        println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
+//        writeArmAngleToArduino()
 //        offset += offsetChange
     }
     Image(

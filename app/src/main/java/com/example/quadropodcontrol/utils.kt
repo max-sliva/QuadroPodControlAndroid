@@ -262,7 +262,7 @@ fun angleForServoArm(degs: Float, arm: Int): Int {
 //    arm3:           servo: down 20  up 165
     var angle = 0
 //    if (arm in 0..1) {
-//        angle = convert(degs.toInt()+85, IntRange(0, 150), IntRange(30, 180))
+        angle = convertAngle(degs.toInt(), IntRange(0, 150), IntRange(30, 180))
 //    }
     if (arm==1 ) angle = (degs+100).toInt()
     if (arm==2) angle = (degs+100).toInt()-40
@@ -271,15 +271,6 @@ fun angleForServoArm(degs: Float, arm: Int): Int {
     println("arm$arm to servo = $angle")
     return angle
 }
-
-
-//val originalRange = 0..100
-//val newRange = 0f..1f
-//
-//val originalValue = 50
-//val newValue = originalValue.toFloat().map(originalRange, newRange)
-//
-//println(newRange.contains(newValue))
 
 //fun convert(number: Int, original: IntRange, target: IntRange): Int {
 //    val ratio = number.toFloat() / (original.endInclusive - original.start)
@@ -291,10 +282,19 @@ fun mapRange(number: Int, prevRange: IntRange, newRange: IntRange) : Int {
     return (ratio * (newRange.last - newRange.first) + newRange.first).toInt()
 }
 
-fun convert(number: Int, original: IntRange, target: IntRange): Int {
-    val ratio = (number - original.start).toFloat() / (original.endInclusive - original.start)
-    return (ratio * (target.endInclusive - target.start)).toInt()
+//old_range = old_max - old_min
+//new_range = new_max - new_min
+//converted = (((old - old_min) * new_range) / old_range) + new_min
+fun convertAngle(number: Int, original: IntRange, target: IntRange): Int {
+    val old_range:Float = (original.last-original.first).toFloat()
+    val new_range: Float = (target.last-target.first).toFloat()
+    val converted = (((number - original.first) * new_range) / old_range) + target.first
+    return converted.toInt()
 }
+//fun convertAngle2(number: Int, original: IntRange, target: IntRange): Int {
+//    val ratio = (number - original.start).toFloat() / (original.endInclusive - original.start)
+//    return (ratio * (target.endInclusive - target.start)).toInt()
+//}
 
 fun angleForServoLeg(degs: Float, leg: Int): Int {
     var angle = 0
