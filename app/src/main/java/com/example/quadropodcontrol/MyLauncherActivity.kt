@@ -134,7 +134,12 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
             Text(text = "Управление любой конечностью")
         }
         Button(
-            onClick = { },
+            onClick = {
+                val newAct = Intent(mContext, RobotMoving::class.java) //описан ниже
+//                newAct.putExtra("angle", degsForLegs[number])
+//                newAct.putExtra("legNumber", number)
+                mContext.startActivity(newAct)
+            },
             enabled = deviceIsChosen && !loading,
             modifier = Modifier
 //                .padding(8.dp)

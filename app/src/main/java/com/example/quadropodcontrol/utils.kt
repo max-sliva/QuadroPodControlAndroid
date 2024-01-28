@@ -8,11 +8,22 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
+import com.example.quadropodcontrol.ArmsAndLegsControl
 import com.example.quadropodcontrol.BluetoothWork
 import com.example.quadropodcontrol.R
 import kotlin.math.atan
 
 fun degsForLeg(degs: Float, curArm: Int) = degs * (if(curArm==0 || curArm==1) -1 else 1)
+
+//fun loadArms(armsAndLegsControl: ArmsAndLegsControl): Array<Bitmap?> {
+//    val arm1 = ContextCompat.getDrawable(armsAndLegsControl, R.drawable.arm1)?.toBitmap()
+//    val arm2 = ContextCompat.getDrawable(armsAndLegsControl, R.drawable.arm2)?.toBitmap()
+//    val arm3 = ContextCompat.getDrawable(armsAndLegsControl, R.drawable.arm3)?.toBitmap()
+//    val arm4 = ContextCompat.getDrawable(armsAndLegsControl, R.drawable.arm4)?.toBitmap()
+//    return arrayOf(arm1, arm2, arm3, arm4)
+//}
 
 fun curLegBody(legNumber: Int, res: Resources): Bitmap? {
     var leg: Bitmap? = null

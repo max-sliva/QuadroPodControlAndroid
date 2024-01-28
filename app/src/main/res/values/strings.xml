@@ -3,4 +3,5 @@
     <string name="title_activity_second">SecondActivity</string>
     <string name="title_activity_launcheк">LauncheкActivity</string>
     <string name="title_activity_arms_and_legs_control">ArmsAndLegsControl</string>
+    <string name="title_activity_robot_moving">RobotMoving</string>
 </resources>

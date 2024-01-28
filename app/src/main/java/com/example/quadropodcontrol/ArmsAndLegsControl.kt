@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import convertAngle
-import writeArmAngleToArduino
 
 class ArmsAndLegsControl : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,23 +46,13 @@ class ArmsAndLegsControl : ComponentActivity() {
             var armNumber by remember {
                 mutableStateOf(0)
             }
-            val arm1 = ContextCompat.getDrawable(this, R.drawable.arm1)?.toBitmap()
-            val arm2 = ContextCompat.getDrawable(this, R.drawable.arm2)?.toBitmap()
-            val arm3 = ContextCompat.getDrawable(this, R.drawable.arm3)?.toBitmap()
-            val arm4 = ContextCompat.getDrawable(this, R.drawable.arm4)?.toBitmap()
-            val leg1 = ContextCompat.getDrawable(this, R.drawable.leg1)?.toBitmap()
-            val leg2 = ContextCompat.getDrawable(this, R.drawable.leg2)?.toBitmap()
-            val leg3 = ContextCompat.getDrawable(this, R.drawable.leg3)?.toBitmap()
-            val leg4 = ContextCompat.getDrawable(this, R.drawable.leg4)?.toBitmap()
-            val legsArray = arrayOf(leg1, leg2, leg3, leg4)
-            val leg1_body = ContextCompat.getDrawable(this, R.drawable.leg1_body_)?.toBitmap()
-            val leg2_body = ContextCompat.getDrawable(this, R.drawable.leg2_body_)?.toBitmap()
-            val leg3_body = ContextCompat.getDrawable(this, R.drawable.leg3_body_)?.toBitmap()
-            val leg4_body = ContextCompat.getDrawable(this, R.drawable.leg4_body_)?.toBitmap()
-            val legBodiesArray = arrayOf(leg1_body, leg2_body, leg3_body, leg4_body)
+            val loader = BitmapsLoader()
+            val armsArray: Array<Bitmap?> = loader.loadArms(this)
+            val legsArray = loader.loadLegs(this)
+            val legBodiesArray = loader.loadLegsBodies(this)
             var legAnglesArray = remember { mutableStateListOf<Int>(0,0,0,0) }
-            val width = arm1!!.width
-            val height = arm1.height
+//            val width = arm1!!.width
+//            val height = arm1.height
             var foundGreen = false
             var xGreenOnArm by remember {mutableStateOf(0f)}
             var yGreenOnArm by remember {mutableStateOf(0f)}
@@ -82,7 +71,7 @@ class ArmsAndLegsControl : ComponentActivity() {
 //                if (foundGreen) break
 //            }
 //            RotatedImage(bitmap = arm1)
-            arrayOf(arm1, arm2, arm3, arm4).forEachIndexed { index, bitmap ->
+            armsArray.forEachIndexed { index, bitmap ->
                 ArmRotation("arm${index+1}", bitmap, LocalContext.current)
                 { x, number ->
                     showLeg = x
