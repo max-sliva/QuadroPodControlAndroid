@@ -16,12 +16,12 @@
         android:theme="@style/Theme.QuadroPodControl"
         tools:targetApi="31">
         <activity
-            android:name=".RobotMoving"
+            android:name=".RobotMovingActivity"
             android:exported="false"
             android:label="@string/title_activity_robot_moving"
             android:theme="@style/Theme.QuadroPodControl" />
         <activity
-            android:name=".ArmsAndLegsControl"
+            android:name=".ArmsAndLegsControlActivity"
             android:exported="false"
             android:label="@string/title_activity_arms_and_legs_control"
             android:screenOrientation="landscape"

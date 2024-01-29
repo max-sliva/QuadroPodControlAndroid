@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,12 +27,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import convertAngle
+import sendDataToBluetoothDevice
 
-class ArmsAndLegsControl : ComponentActivity() {
+class ArmsAndLegsControlActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -46,6 +50,8 @@ class ArmsAndLegsControl : ComponentActivity() {
             var armNumber by remember {
                 mutableStateOf(0)
             }
+
+            println("BluetoothWork.currentSocket = ${BluetoothWork.currentSocket}")
             val loader = BitmapsLoader()
             val armsArray: Array<Bitmap?> = loader.loadArms(this)
             val legsArray = loader.loadLegs(this)
@@ -109,7 +115,6 @@ private fun LegMoving(
             //            .size(1900.dp)
 
         )
-        //todo передавать в LegRotaion remember для хранения угла
         LegRotaion(leg, armNumber, legAnglesArray) { /*x-> println(x) */}
         Image(
             bitmap = legBody?.asImageBitmap()!!,
@@ -265,6 +270,10 @@ private fun ArmRotation(
         }
         val angle = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
+        val toArduino = "${(armName.last().code-'0'.code-1)*2}-$angle\n"
+        println("to Arduino = $toArduino")
+        //todo проверять интенсивность изменений угла и отправлять только раз в секунду, если значение поменялось
+//        sendDataToBluetoothDevice(BluetoothWork.currentSocket, "$toArduino")
 //        writeArmAngleToArduino()
 //        offset += offsetChange
     }
@@ -289,5 +298,23 @@ private fun ArmRotation(
 //                showLeg = true
                 onClick(true, armName.last())
             }
+//            .pointerInput(Unit) {
+//                detectDragGestures(
+//                    onDragStart = {
+//
+//                    },
+//                    onDrag = { change: PointerInputChange, dragAmount: Offset ->
+////                        offsetX += dragAmount.x
+////                        offsetY += dragAmount.y
+//
+//                    },
+//                    onDragEnd = {
+//                        println("drag ended")
+//                    }
+////                    var interaction: DragInteraction.Start? = null
+////                    onDragEnd = {
+////                    }
+//                )
+//            }
     )
 }

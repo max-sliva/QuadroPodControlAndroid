@@ -30,10 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
-import kotlin.time.Duration
+import java.io.Serializable
 
 class MyLauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,13 +88,16 @@ class MyLauncherActivity : ComponentActivity() {
                                 }
                                 println("after choosing device")
 //                                else
-                                if (socketToDevice!=null) deviceIsChosen = true
+                                if (socketToDevice!=null) {
+                                    deviceIsChosen = true
+                                    bltWork.setCurrentSocket(socketToDevice!!)
+                                }
 //                    curSerialPort = SerialPort(curComPort)
 //                    curSerialPort.openPort()
                             }
                         }
                         println("between views")
-                        Greeting(deviceIsChosen = true,"Выберите режим:", loading) //убрать deviceIsChosen = true при реальном выборе устройства
+                        ModeSelection(deviceIsChosen=true,"Выберите режим:", loading, bltWork, socketToDevice) //убрать deviceIsChosen = true при реальном выборе устройства
                     }
                 }
             }
@@ -105,7 +106,13 @@ class MyLauncherActivity : ComponentActivity() {
 }
 //@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режим:", loading: Boolean) {
+fun ModeSelection(
+    deviceIsChosen: Boolean,
+    text: String = "Выберите режим:",
+    loading: Boolean,
+    bltWork: BluetoothWork,
+    socketToDevice: BluetoothSocket?
+) {
     val mContext = LocalContext.current
     Column(
         modifier = Modifier
@@ -120,9 +127,10 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
         )
         Button(
             onClick = {
-                val newAct = Intent(mContext, ArmsAndLegsControl::class.java) //описан ниже
+                val newAct = Intent(mContext, ArmsAndLegsControlActivity::class.java) //описан ниже
 //                newAct.putExtra("angle", degsForLegs[number])
-//                newAct.putExtra("legNumber", number)
+//                newAct.putExtra("bltWork", bltWork)
+//                newAct.putExtra("socketToDevice", socketToDevice)
                 mContext.startActivity(newAct)
             },
             enabled = deviceIsChosen && !loading,
@@ -135,7 +143,7 @@ fun Greeting(deviceIsChosen: Boolean, text: String = "Выберите режи�
         }
         Button(
             onClick = {
-                val newAct = Intent(mContext, RobotMoving::class.java) //описан ниже
+                val newAct = Intent(mContext, RobotMovingActivity::class.java) //описан ниже
 //                newAct.putExtra("angle", degsForLegs[number])
 //                newAct.putExtra("legNumber", number)
                 mContext.startActivity(newAct)

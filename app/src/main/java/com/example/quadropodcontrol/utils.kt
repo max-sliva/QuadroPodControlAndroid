@@ -1,4 +1,6 @@
+import android.Manifest
 import android.bluetooth.BluetoothSocket
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,11 +10,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
-import com.example.quadropodcontrol.ArmsAndLegsControl
+import androidx.core.app.ActivityCompat
 import com.example.quadropodcontrol.BluetoothWork
 import com.example.quadropodcontrol.R
+import java.io.IOException
 import kotlin.math.atan
 
 fun degsForLeg(degs: Float, curArm: Int) = degs * (if(curArm==0 || curArm==1) -1 else 1)
@@ -330,5 +331,31 @@ fun writeArmAngleToArduino(bltWork: BluetoothWork, curSocket: BluetoothSocket, a
 //        bltWork.sendDataToBluetoothDevice(curSocket, "")
         if (isArm) bltWork.sendDataToBluetoothDevice(curSocket,"${armNumberToSend*2}-$angleToComPort\n")
         else bltWork.sendDataToBluetoothDevice(curSocket,"${armNumberToSend*2+1}-$angleToComPort\n")
+    }
+}
+
+fun sendDataToBluetoothDevice(socket: BluetoothSocket, data: String) {
+    try {
+//        if (ActivityCompat.checkSelfPermission(
+//                context,
+//                Manifest.permission.BLUETOOTH_CONNECT
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            println("Should Requesting Bluetooth permission")
+////                ActivityCompat.requestPermissions(::LauncherActivity, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), REQUEST_CODE)
+////            return emptyList()
+//        }
+        // Get the BluetoothSocket for the device
+//            val socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+//            socket.connect()
+        // Convert the string to bytes
+        val bytes = data.toByteArray()
+        // Send the bytes to the device
+        val outputStream = socket.outputStream
+        outputStream.write(bytes)
+        // Close the socket
+//            socket.close()
+    } catch (e: IOException) {
+        e.printStackTrace()
     }
 }

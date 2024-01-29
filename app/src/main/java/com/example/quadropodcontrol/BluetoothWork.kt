@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import java.io.IOException
+import java.io.Serializable
 import java.util.UUID
 
 @Composable
@@ -93,10 +96,12 @@ fun BluetoothDropdownList(
 }
 
 class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivity) {
-    private var context: Context
+    private var context: Context = localContext
     private var bltList = listOf<String>()
     private var pairedDevices: Set<BluetoothDevice>? = null
-
+    companion object {
+        var currentSocket: BluetoothSocket? = null
+    }
     init {
         context = localContext
         if (ActivityCompat.checkSelfPermission(
@@ -170,6 +175,19 @@ class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivit
         return socket
     }
 
+    fun setCurrentSocket(socket: BluetoothSocket){
+        currentSocket = socket
+    }
+
+    fun printBltDevicesList(){
+        bltList?.forEach { device ->
+//            val deviceName = device.name
+//            val deviceHardwareAddress = device.address // MAC address
+            println("blt device = $device")
+//            bltList = bltList.plus(deviceName)
+        }
+    }
+
     fun sendDataToBluetoothDevice(socket: BluetoothSocket, data: String) {
         try {
             if (ActivityCompat.checkSelfPermission(
@@ -212,5 +230,4 @@ class BluetoothWork(localContext: Context, myLauncherActivity: MyLauncherActivit
 
         return curDevice!!
     }
-
 }
