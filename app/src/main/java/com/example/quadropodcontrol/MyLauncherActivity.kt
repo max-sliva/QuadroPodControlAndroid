@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +33,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 import kotlinx.coroutines.async
-import java.io.Serializable
 
 class MyLauncherActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +63,7 @@ class MyLauncherActivity : ComponentActivity() {
             println("blt devices = ${bltList}")
             var curDeviceName by remember { mutableStateOf("")        }
             var deviceIsChosen by remember { mutableStateOf(false) }
+            var checkedState = remember { mutableStateOf(false) }
             QuadroPodControlTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -97,7 +99,8 @@ class MyLauncherActivity : ComponentActivity() {
                             }
                         }
                         println("between views")
-                        ModeSelection(deviceIsChosen,"Выберите режим:", loading, bltWork, socketToDevice) //убрать deviceIsChosen = true при реальном выборе устройства
+                        if (!checkedState.value) ModeSelection(deviceIsChosen,"Выберите режим:", loading, bltWork, socketToDevice, checkedState) //убрать deviceIsChosen = true при реальном выборе устройства
+                        else ModeSelection(true,"Выберите режим:", loading, bltWork, socketToDevice, checkedState) //убрать deviceIsChosen = true при реальном выборе устройства
                     }
                 }
             }
@@ -111,9 +114,11 @@ fun ModeSelection(
     text: String = "Выберите режим:",
     loading: Boolean,
     bltWork: BluetoothWork,
-    socketToDevice: BluetoothSocket?
+    socketToDevice: BluetoothSocket?,
+    checkedState: MutableState<Boolean>
 ) {
     val mContext = LocalContext.current
+//    var checkedState = remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,6 +126,10 @@ fun ModeSelection(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Checkbox(
+            checked = checkedState.value,
+            onCheckedChange = { checkedState.value = it }
+        )
         Text(
             text = "$text",
             modifier = Modifier

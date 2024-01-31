@@ -198,7 +198,7 @@ private fun LegRotaion(
         if (legNumberForArduino*2-1==3 || legNumberForArduino*2-1==5) angleToArduino=180-angleToArduino
         val toArduino = "${legNumberForArduino*2-1}-$angleToArduino\n"
         println("to Arduino = $toArduino")
-        sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
+        if (BluetoothWork.currentSocket!=null) sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
 
 //        offset += offsetChange
     }
@@ -285,7 +285,7 @@ private fun ArmRotation(
 //        val toArduino = "${(armName.last().code-'0'.code-1)*2}-$angle\n"
         val toArduino = "${armNumberForArduino*2}-$angle\n"
         println("to Arduino = $toArduino")
-        sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
+        if (BluetoothWork.currentSocket!=null) sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
 //        writeArmAngleToArduino()
 //        offset += offsetChange
     }
