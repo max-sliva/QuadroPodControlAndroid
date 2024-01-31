@@ -157,6 +157,7 @@ private fun LegRotaion(
     onRotate: (angle: Int)-> Unit
 ){
     var rotation by remember { mutableFloatStateOf(0f) }
+    rotation = angle[armNumber-1].toFloat()
     var offset by remember { mutableStateOf(Offset.Zero) }
     val scale = 0.5f
     var transformOrigin: TransformOrigin? = TransformOrigin(0.75f, 0.7f)
@@ -192,6 +193,13 @@ private fun LegRotaion(
         }
         angle[armNumber-1] = rotation.toInt()
         println("rotation = $rotation")
+        val legNumberForArduino = if (armNumber==4) 3 else if (armNumber==3) 4 else armNumber //меняем 3 и 4 местами, из-за подключения на Arduino
+        var angleToArduino = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(0, 180))
+        if (legNumberForArduino*2-1==3 || legNumberForArduino*2-1==5) angleToArduino=180-angleToArduino
+        val toArduino = "${legNumberForArduino*2-1}-$angleToArduino\n"
+        println("to Arduino = $toArduino")
+        sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
+
 //        offset += offsetChange
     }
     Image(
@@ -268,12 +276,16 @@ private fun ArmRotation(
             temp+=offsetChange.y
             if (temp in rangDown..rangeUp) rotation += offsetChange.y
         }
-        val angle = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
+        val angle =180-convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
-        val toArduino = "${(armName.last().code-'0'.code-1)*2}-$angle\n"
+//        angle = 180 -
+        var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
+        if (armNumberForArduino==2) armNumberForArduino = 3
+        else if (armNumberForArduino==3) armNumberForArduino = 2
+//        val toArduino = "${(armName.last().code-'0'.code-1)*2}-$angle\n"
+        val toArduino = "${armNumberForArduino*2}-$angle\n"
         println("to Arduino = $toArduino")
-        //todo проверять интенсивность изменений угла и отправлять только раз в секунду, если значение поменялось
-//        sendDataToBluetoothDevice(BluetoothWork.currentSocket, "$toArduino")
+        sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$toArduino")
 //        writeArmAngleToArduino()
 //        offset += offsetChange
     }

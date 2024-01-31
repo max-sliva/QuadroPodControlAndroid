@@ -58,18 +58,18 @@ void rotateServo(String cmd) {
   // Serial.print("rotate = ");
   // Serial.println(cmd);
   int servoNumber = cmd[0] - '0';
-  Serial.print("servoNumber = ");
-  Serial.print(servoNumber);
+  // Serial.print("servoNumber = ");
+  // Serial.print(servoNumber);
   int angle = cmd.substring(2).toInt();
-  Serial.print(", angle = ");
-  Serial.println(angle);
+  // Serial.print(", angle = ");
+  // Serial.println(angle);
   if (angle >= 0 && angle <= 180) servos[servoNumber].write(angle);
-  else Serial.println("Wrong angle");
+  // else Serial.println("Wrong angle");
 }
 
 void runCmd(String cmd) {  //ф-ия для разбора поступившей из порта команды
-  Serial.print("cmd = ");
-  Serial.println(cmd);
+  // Serial.print("cmd = ");
+  // Serial.println(cmd);
   if (cmd[0] >= '0' && cmd[0] <= '9') rotateServo(cmd);
 }
 
@@ -77,8 +77,8 @@ void loop() {
   if (Serial.available()) {
     char a = Serial.read();
     if (a == '\n') {
-      Serial.print("message = ");
-      Serial.println(message);
+      // Serial.print("message = ");
+      // Serial.println(message);
       runCmd(message);
       message = "";
     } else message += a;

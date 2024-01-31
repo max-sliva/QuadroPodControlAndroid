@@ -97,7 +97,7 @@ class MyLauncherActivity : ComponentActivity() {
                             }
                         }
                         println("between views")
-                        ModeSelection(deviceIsChosen=true,"Выберите режим:", loading, bltWork, socketToDevice) //убрать deviceIsChosen = true при реальном выборе устройства
+                        ModeSelection(deviceIsChosen,"Выберите режим:", loading, bltWork, socketToDevice) //убрать deviceIsChosen = true при реальном выборе устройства
                     }
                 }
             }
