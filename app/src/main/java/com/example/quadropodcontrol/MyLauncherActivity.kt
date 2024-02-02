@@ -99,7 +99,8 @@ class MyLauncherActivity : ComponentActivity() {
                             }
                         }
                         println("between views")
-                        if (!checkedState.value) ModeSelection(deviceIsChosen,"Выберите режим:", loading, bltWork, socketToDevice, checkedState) //убрать deviceIsChosen = true при реальном выборе устройства
+                        if (!checkedState.value)
+                            ModeSelection(deviceIsChosen,"Выберите режим:", loading, bltWork, socketToDevice, checkedState) //убрать deviceIsChosen = true при реальном выборе устройства
                         else ModeSelection(true,"Выберите режим:", loading, bltWork, socketToDevice, checkedState) //убрать deviceIsChosen = true при реальном выборе устройства
                     }
                 }

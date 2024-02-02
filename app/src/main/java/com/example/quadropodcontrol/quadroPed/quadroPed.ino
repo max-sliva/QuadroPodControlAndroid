@@ -4,6 +4,7 @@ int servoPins[] = { 2, 3, 4, 5, 10, 7, 8, 9 };
 Servo servos[8];
 
 void servoCalibration() {
+    //скорректировать начальные углы
   //body servos along
   servos[0].write(120);
   servos[4].write(120);

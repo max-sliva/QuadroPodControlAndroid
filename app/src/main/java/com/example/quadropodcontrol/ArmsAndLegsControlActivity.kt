@@ -163,6 +163,7 @@ private fun LegRotaion(
     var transformOrigin: TransformOrigin? = TransformOrigin(0.75f, 0.7f)
     var translateX = -260F
     var translateY = 50F
+    //скорректировать границы углов поворота
     var rangeUp = 800F
     var rangDown = -800F
     if (armNumber==2) {
@@ -276,7 +277,8 @@ private fun ArmRotation(
             temp+=offsetChange.y
             if (temp in rangDown..rangeUp) rotation += offsetChange.y
         }
-        val angle =180-convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
+//        val angle =180-convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
+        val angle =convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(5, 150))
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
 //        angle = 180 -
         var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
