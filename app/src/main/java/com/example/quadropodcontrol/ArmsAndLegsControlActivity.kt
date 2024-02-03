@@ -164,22 +164,28 @@ private fun LegRotaion(
     var translateX = -260F
     var translateY = 50F
     //скорректировать границы углов поворота
-    var rangeUp = 800F
-    var rangDown = -800F
+    var rangeUp = 600F
+    var rangDown = -1000F
     if (armNumber==2) {
         transformOrigin = TransformOrigin(0.85f, 0.6f)
         translateX = 10F
         translateY = 70F
+        rangeUp = 700F
+        rangDown = -900F
     }
     if (armNumber==3) {
         transformOrigin = TransformOrigin(0.25f, 0.7f)
         translateX = 700F
         translateY = 90F
+        rangeUp = 1000F
+        rangDown = -600F
     }
     if (armNumber==4) {
         transformOrigin = TransformOrigin(0.25f, 0.6f)
         translateX = 300F
         translateY = 90F
+        rangeUp = 1000F
+        rangDown = -600F
     }
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange

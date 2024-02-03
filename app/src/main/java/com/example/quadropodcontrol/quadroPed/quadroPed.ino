@@ -5,41 +5,51 @@ Servo servos[8];
 
 void servoCalibration() {
     //скорректировать начальные углы
+  // servos[7].write(0); 
+  // delay(3000);
+
+  servos[1].write(110);
+  servos[5].write(110);
+  servos[3].write(20);
+  servos[7].write(20);  
   //body servos along
-  servos[0].write(120);
-  servos[4].write(120);
-  servos[2].write(60);
-  servos[6].write(60);
   delay(2000);
   //body servos across
-  servos[0].write(40);
-  servos[4].write(40);
-  servos[2].write(140);
-  servos[6].write(140);
+  servos[0].write(100);
+  servos[4].write(100);
+  servos[2].write(50);
+  servos[6].write(50);
 
-  //leg servos - up
-  servos[1].write(160);
-  servos[5].write(160);
-  servos[3].write(20);
-  servos[7].write(20);
   delay(2000);
   //leg servos - down
-  servos[1].write(10);
-  servos[5].write(10);
-  servos[3].write(170);
-  servos[7].write(170);
+  // servos[1].write(10); //35
+  // servos[5].write(10);//35
+  // servos[3].write(170); //100
+  // servos[7].write(170);//100
+  servos[1].write(35); //35
+  servos[5].write(35);//35
+  servos[3].write(100); //100
+  servos[7].write(100);//100
   delay(2000);
   //body servos along
-  servos[0].write(120);
-  servos[4].write(120);
-  servos[2].write(60);
-  servos[6].write(60);
+  // servos[0].write(120); //100
+  // servos[4].write(120);//100
+  // servos[2].write(60);//50
+  // servos[6].write(60);//50  
+  servos[0].write(50); //50
+  servos[4].write(50);//50
+  servos[2].write(100);//100
+  servos[6].write(100);//100
   // for (int i = 1; i<8; i+=2) {
   //   servos[i].write(120);
   // }
   // servos[4].write(120);
   // servos[2].write(60);
   // servos[6].write(60);
+  delay(1000);
+  Serial.println("3-0");
+  servos[3].write(0); 
+  delay(3000);
 }
 
 String message = "";
