@@ -4,7 +4,6 @@ int servoPins[] = { 2, 3, 4, 5, 10, 7, 8, 9 };
 Servo servos[8];
 
 void servoCalibration() {
-    //скорректировать начальные углы
   // servos[7].write(0); 
   // delay(3000);
 
@@ -28,8 +27,8 @@ void servoCalibration() {
   // servos[7].write(170);//100
   servos[1].write(35); //35
   servos[5].write(35);//35
-  servos[3].write(100); //100
-  servos[7].write(100);//100
+  servos[3].write(155); //155
+  servos[7].write(155);//155
   delay(2000);
   //body servos along
   // servos[0].write(120); //100
@@ -46,10 +45,10 @@ void servoCalibration() {
   // servos[4].write(120);
   // servos[2].write(60);
   // servos[6].write(60);
-  delay(1000);
-  Serial.println("3-0");
-  servos[3].write(0); 
-  delay(3000);
+  // delay(1000);
+  // Serial.println("3-0");
+  // servos[3].write(0); 
+  // delay(3000);
 }
 
 String message = "";

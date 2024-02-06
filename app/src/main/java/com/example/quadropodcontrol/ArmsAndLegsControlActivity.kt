@@ -56,7 +56,7 @@ class ArmsAndLegsControlActivity : ComponentActivity() {
             val armsArray: Array<Bitmap?> = loader.loadArms(this)
             val legsArray = loader.loadLegs(this)
             val legBodiesArray = loader.loadLegsBodies(this)
-            var legAnglesArray = remember { mutableStateListOf<Int>(0,0,0,0) }
+            var legAnglesArray = remember { mutableStateListOf<Int>(-842, -944, 785, 855) }
 //            val width = arm1!!.width
 //            val height = arm1.height
             var foundGreen = false
@@ -164,14 +164,14 @@ private fun LegRotaion(
     var translateX = -260F
     var translateY = 50F
     //скорректировать границы углов поворота
-    var rangeUp = 600F
-    var rangDown = -1000F
+    var rangeUp = 600F //для armNumber == 1 и 2
+    var rangDown = -1200F
     if (armNumber==2) {
         transformOrigin = TransformOrigin(0.85f, 0.6f)
         translateX = 10F
         translateY = 70F
-        rangeUp = 700F
-        rangDown = -900F
+//        rangeUp = 600F
+//        rangDown = -1200F
     }
     if (armNumber==3) {
         transformOrigin = TransformOrigin(0.25f, 0.7f)
@@ -184,7 +184,7 @@ private fun LegRotaion(
         transformOrigin = TransformOrigin(0.25f, 0.6f)
         translateX = 300F
         translateY = 90F
-        rangeUp = 1000F
+        rangeUp = 1200F
         rangDown = -600F
     }
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
