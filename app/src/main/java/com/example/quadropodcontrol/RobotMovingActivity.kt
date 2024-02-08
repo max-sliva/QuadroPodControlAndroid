@@ -18,6 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
+import kotlin.math.sqrt
 
 class RobotMovingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +46,11 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
     var offsetY by remember { mutableStateOf(0f) }
     var circleX by remember { mutableStateOf(0f) }
     var circleY by remember { mutableStateOf(0f) }
+    var circleXStart by remember { mutableStateOf(0f) }
+    var circleYStart by remember { mutableStateOf(0f) }
+
+    val innerCircleRadius = 100f
+    val outerCircleRadius = 400f
 
     Canvas(modifier = Modifier
         .fillMaxSize()
@@ -63,7 +69,7 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
                     offsetX = 0F //сбрасываем оффсеты, чтобы нормально двигать ногу
                     offsetY = 0F
 //                            val ratio = quadroPodBody.width / size.width
-                    println("ratio in dragStart = $ratio")
+//                    println("ratio in dragStart = $ratio")
 
 //                    var number =
 //                        getArmNumber(startPointX, quadroPodBody, startPointY, ratio)
@@ -78,6 +84,14 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
 //                            println("arm1RotatePointX = $arm1RotatePointX arm1RotatePointY = $arm1RotatePointY" )
                     offsetX += dragAmount.x
                     offsetY += dragAmount.y
+                    val dist = sqrt(Math.pow((circleXStart-circleX).toDouble(), 2.0) + Math.pow((circleYStart-circleY).toDouble(), 2.0))
+                    if (dist+innerCircleRadius < outerCircleRadius) {
+                        circleX += dragAmount.x
+                        circleY += dragAmount.y
+                    }
+
+//                    println("dragAmount.x = ${dragAmount.x}  dragAmount.y = ${dragAmount.y}")
+                    println("circleX = $circleX  circleY = $circleY")
                     var number = 0
 //                            val ratio = quadroPodBody.width / size.width
 //                    println("ratio in dragStart = $ratio")
@@ -91,6 +105,8 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
 //                    offsetYArray[number] += dragAmount.y
                 },
                 onDragEnd = {
+                    circleX = circleXStart
+                    circleY = circleYStart
 //                            println("angle on drag end = $degs")
 //                           angleOnDragEnd = degs
 //                            val ratio = quadroPodBody.width / size.width
@@ -111,15 +127,20 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
         }){
         val canvasWidth = size.width
         val canvasHeight = size.height
-        val innerCircleRadius = canvasWidth / 8f
-        val outerCircleRadius = canvasWidth / 3f
-
+//        val innerCircleRadius = canvasWidth / 8f
+//        val outerCircleRadius = canvasWidth / 3f
+        if (circleX==0f){
+            circleX = canvasWidth / 2
+            circleY = canvasHeight / 2
+            circleXStart = circleX
+            circleYStart = circleY
+        }
         if (innerCircleRadius+offsetX<=outerCircleRadius && innerCircleRadius+offsetY<=outerCircleRadius) {
-            circleX = innerCircleRadius+offsetX
-            circleY = innerCircleRadius+offsetY
+//            circleX += offsetX
+//            circleY += offsetY
+//            println("offsetX = $offsetX  offsetY = $offsetY")
         }
 
-        // TODO: сделать переменную для центра большого круга и определять пределы обработки касания
         drawCircle( //то рисуем его
             Color.Gray, //цвет рисования
             radius = outerCircleRadius //и радиус
