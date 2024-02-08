@@ -8,7 +8,6 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +43,8 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
     var startPointY by remember { mutableStateOf(0f) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
+    var circleX by remember { mutableStateOf(0f) }
+    var circleY by remember { mutableStateOf(0f) }
 
     Canvas(modifier = Modifier
         .fillMaxSize()
@@ -79,7 +80,7 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
                     offsetY += dragAmount.y
                     var number = 0
 //                            val ratio = quadroPodBody.width / size.width
-                    println("ratio in dragStart = $ratio")
+//                    println("ratio in dragStart = $ratio")
 //                    number = getArmNumber(
 //                        startPointX,
 //                        quadroPodBody,
@@ -109,16 +110,24 @@ fun ControlBox(name: String, modifier: Modifier = Modifier) {
             )
         }){
         val canvasWidth = size.width
-        val circleRadius = canvasWidth / 8f
+        val canvasHeight = size.height
+        val innerCircleRadius = canvasWidth / 8f
+        val outerCircleRadius = canvasWidth / 3f
+
+        if (innerCircleRadius+offsetX<=outerCircleRadius && innerCircleRadius+offsetY<=outerCircleRadius) {
+            circleX = innerCircleRadius+offsetX
+            circleY = innerCircleRadius+offsetY
+        }
+
         // TODO: сделать переменную для центра большого круга и определять пределы обработки касания
         drawCircle( //то рисуем его
             Color.Gray, //цвет рисования
-            radius = canvasWidth / 3f //и радиус
+            radius = outerCircleRadius //и радиус
         )
         drawCircle( //то рисуем его
             Color.Blue, //цвет рисования
-            radius = circleRadius, //и радиус
-            center = Offset(canvasWidth / 2+offsetX, size.height / 2 + offsetY)
+            radius = innerCircleRadius, //и радиус
+            center = Offset(circleX, circleY)
         )
     }
 //    Text(
