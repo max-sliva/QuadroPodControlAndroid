@@ -301,7 +301,7 @@ private fun ArmRotation(
             rangDown = -400F
         }
     }
-    var armNumberForArduino = armName.last().digitToInt() - 1
+    var armNumberForArduino = armName.last().digitToInt() - 1 //для строки "arm1" получаем число 0
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange
         var temp = rotation
@@ -319,8 +319,7 @@ private fun ArmRotation(
 //            anglesArray[armName.last().digitToInt()-1] = angle
 //        }
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
-//        angle = 180 -
-//        var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
+//        var armNumberForArduino = armName.last().code - '0'.code - 1
 //        anglesArray[armNumberForArduino] = angle
         if (armNumberForArduino==2) armNumberForArduino = 3
         else if (armNumberForArduino==3) armNumberForArduino = 2
@@ -336,7 +335,7 @@ private fun ArmRotation(
     val screenWidth = configuration.screenWidthDp.dp
     val textX = if (armNumberForArduino == 2 || armNumberForArduino == 3) screenWidth / 2 - 40.dp + 50.dp else  screenWidth / 2 - 40.dp
     val textY = if (armNumberForArduino == 1 || armNumberForArduino == 3) (screenHeight / 2 + 20.dp) else screenHeight /2 - 50.dp
-            println("textX = $textX textY = $textY")
+    println("textX = $textX textY = $textY")
     Text(
         text = angle.toString(),
         modifier = Modifier
