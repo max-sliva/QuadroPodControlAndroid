@@ -3,6 +3,27 @@
 int servoPins[] = { 2, 3, 4, 5, 10, 7, 8, 9 };
 Servo servos[8];
 
+void forward(){
+
+}
+
+void back(){
+
+}
+
+void turnLeft(){
+
+}
+
+void turnRight(){
+  servos[0].write(100);
+  servos[4].write(100);
+  servos[2].write(50);
+  servos[6].write(50);
+  
+}
+
+
 void servoCalibration() {
   // servos[7].write(0); 
   // delay(3000);
@@ -48,7 +69,11 @@ void servoCalibration() {
   // delay(1000);
   // Serial.println("3-0");
   // servos[3].write(0); 
-  // delay(3000);
+   delay(2000);
+   turnRight();
+   delay(2000);
+   turnRight();
+   delay(2000);
 }
 
 String message = "";

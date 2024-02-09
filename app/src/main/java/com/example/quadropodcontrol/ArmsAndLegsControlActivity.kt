@@ -1,5 +1,6 @@
 package com.example.quadropodcontrol
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -8,10 +9,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,15 +28,24 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import convertAngle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import sendDataToBluetoothDevice
 
 class ArmsAndLegsControlActivity : ComponentActivity() {
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -50,6 +60,9 @@ class ArmsAndLegsControlActivity : ComponentActivity() {
             var armNumber by remember {
                 mutableStateOf(0)
             }
+            val configuration = LocalConfiguration.current
+            val screenHeight = configuration.screenHeightDp.dp
+            val screenWidth = configuration.screenWidthDp.dp
 
             println("BluetoothWork.currentSocket = ${BluetoothWork.currentSocket}")
             val loader = BitmapsLoader()
@@ -62,36 +75,35 @@ class ArmsAndLegsControlActivity : ComponentActivity() {
             var foundGreen = false
             var xGreenOnArm by remember {mutableStateOf(0f)}
             var yGreenOnArm by remember {mutableStateOf(0f)}
-//            for (x in 0 until width) {
-//                for (y in 0 until height) {
-//                    val pixel = arm1.getPixel(x, y)
-//                    val green = Color.green(pixel)
-//                    if (green >= 200) {
-//                        xGreenOnArm = x.toFloat()
-//                        yGreenOnArm = y.toFloat()
-//                        println("found green in $x $y")
-//                        foundGreen = true
-//                        break
-//                    }
-//                }
-//                if (foundGreen) break
-//            }
-//            RotatedImage(bitmap = arm1)
+            var anglesArray = remember { mutableStateListOf<Int>(50, 100, 50, 100) }
             armsArray.forEachIndexed { index, bitmap ->
                 ArmRotation("arm${index+1}", bitmap, LocalContext.current)
                 { x, number ->
                     showLeg = x
                     armNumber = number.digitToInt()
+//                    anglesArray[index] = angle
                 }
             }
+//            Text(text = anglesArray[0].toString())
 
             if (showLeg) {
                 LegMoving(back, legsArray[armNumber-1], legBodiesArray[armNumber-1], armNumber, legAnglesArray){ x-> showLeg = x}
             }
+//            var i = 0
+//            this.lifecycleScope.launch {
+//                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                    // this block is automatically executed when moving into
+//                    // the started state, and cancelled when stopping.
+//                    while (true) {
+//                        i++
+//                        println("$i second from coroutine")
+//                        delay(1000L)
+//                    }
+//                }
+//            }
         }
     }
 }
-
 
 @Composable
 private fun LegMoving(
@@ -218,7 +230,7 @@ private fun LegRotaion(
                 transformOrigin = transformOrigin!!,
                 scaleX = scale,
                 scaleY = scale,
-                rotationZ = (angle[armNumber-1] / 10).toFloat(),
+                rotationZ = (angle[armNumber - 1] / 10).toFloat(),
                 translationX = translateX,
                 translationY = translateY
             )
@@ -233,7 +245,8 @@ private fun ArmRotation(
 //    xGreenOnArm: Float,
 //    yGreenOnArm: Float,
     current: Context,
-    onClick:(x: Boolean, number: Char) -> Unit
+//    anglesArray: SnapshotStateList<Int>,
+    onClick: (x: Boolean, number: Char) -> Unit
 ) {
     // set up all transformation states
 //    var showLeg by remember { mutableStateOf(false) }
@@ -245,6 +258,7 @@ private fun ArmRotation(
     var translateX = -440F
     var rangeUp = 790F
     var rangDown = -400F
+    var angle by remember { mutableStateOf( 0)}
     when (armName) {
         "arm1"->  {
             transformOrigin = TransformOrigin(0.9f, 0.7f) //это определяет точку поворота, первый параметр по X, второй - по Y
@@ -284,10 +298,14 @@ private fun ArmRotation(
             if (temp in rangDown..rangeUp) rotation += offsetChange.y
         }
 //        val angle =180-convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(30, 170))
-        val angle =convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(5, 150))
+        angle = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(5, 150))
+//        if (anglesArray[armName.last().digitToInt()-1]!=angle) {
+//            anglesArray[armName.last().digitToInt()-1] = angle
+//        }
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
 //        angle = 180 -
         var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
+//        anglesArray[armNumberForArduino] = angle
         if (armNumberForArduino==2) armNumberForArduino = 3
         else if (armNumberForArduino==3) armNumberForArduino = 2
 //        val toArduino = "${(armName.last().code-'0'.code-1)*2}-$angle\n"
@@ -297,6 +315,13 @@ private fun ArmRotation(
 //        writeArmAngleToArduino()
 //        offset += offsetChange
     }
+    
+    Text(
+        text = angle.toString(),
+        modifier = Modifier
+            .offset(0.dp,(100*(armName.last().digitToInt()-1)).dp)
+    )
+    
     Image(
         bitmap = bitmapSrc?.asImageBitmap()!!,
         contentDescription = "Image",
@@ -313,9 +338,12 @@ private fun ArmRotation(
             .transformable(state = state)
             .clickable {
                 Toast
-                    .makeText(current, "$armName clicked", Toast.LENGTH_LONG)
+                    .makeText(current, "$armName clicked angle = $angle", Toast.LENGTH_LONG)
                     .show()
 //                showLeg = true
+//                anglesArray[armName
+//                    .last()
+//                    .digitToInt() - 1] = angle
                 onClick(true, armName.last())
             }
 //            .pointerInput(Unit) {
