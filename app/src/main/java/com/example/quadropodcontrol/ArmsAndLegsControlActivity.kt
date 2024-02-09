@@ -60,9 +60,9 @@ class ArmsAndLegsControlActivity : ComponentActivity() {
             var armNumber by remember {
                 mutableStateOf(0)
             }
-            val configuration = LocalConfiguration.current
-            val screenHeight = configuration.screenHeightDp.dp
-            val screenWidth = configuration.screenWidthDp.dp
+//            val configuration = LocalConfiguration.current
+//            val screenHeight = configuration.screenHeightDp.dp
+//            val screenWidth = configuration.screenWidthDp.dp
 
             println("BluetoothWork.currentSocket = ${BluetoothWork.currentSocket}")
             val loader = BitmapsLoader()
@@ -75,7 +75,7 @@ class ArmsAndLegsControlActivity : ComponentActivity() {
             var foundGreen = false
             var xGreenOnArm by remember {mutableStateOf(0f)}
             var yGreenOnArm by remember {mutableStateOf(0f)}
-            var anglesArray = remember { mutableStateListOf<Int>(50, 100, 50, 100) }
+//            var anglesArray = remember { mutableStateListOf<Int>(50, 100, 50, 100) }
             armsArray.forEachIndexed { index, bitmap ->
                 ArmRotation("arm${index+1}", bitmap, LocalContext.current)
                 { x, number ->
@@ -155,6 +155,7 @@ private fun LegMoving(
            }) {
         Text(text = "x")
     }
+
 }
 
 @Composable
@@ -199,6 +200,11 @@ private fun LegRotaion(
         rangeUp = 1200F
         rangDown = -600F
     }
+    var angleToArduino by remember { mutableStateOf(0)}
+    angleToArduino = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(0, 180))
+    val legNumberForArduino = if (armNumber==4) 3 else if (armNumber==3) 4 else armNumber
+    if (legNumberForArduino*2-1==3 || legNumberForArduino*2-1==5) angleToArduino=180-angleToArduino
+
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange
         var temp = rotation
@@ -212,8 +218,8 @@ private fun LegRotaion(
         }
         angle[armNumber-1] = rotation.toInt()
         println("rotation = $rotation")
-        val legNumberForArduino = if (armNumber==4) 3 else if (armNumber==3) 4 else armNumber //меняем 3 и 4 местами, из-за подключения на Arduino
-        var angleToArduino = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(0, 180))
+//        val legNumberForArduino = if (armNumber==4) 3 else if (armNumber==3) 4 else armNumber //меняем 3 и 4 местами, из-за подключения на Arduino
+        angleToArduino = convertAngle(rotation.toInt(), IntRange(rangDown.toInt(), rangeUp.toInt()), IntRange(0, 180))
         if (legNumberForArduino*2-1==3 || legNumberForArduino*2-1==5) angleToArduino=180-angleToArduino
         val toArduino = "${legNumberForArduino*2-1}-$angleToArduino\n"
         println("to Arduino = $toArduino")
@@ -221,6 +227,14 @@ private fun LegRotaion(
 
 //        offset += offsetChange
     }
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+    Text(
+        text = angleToArduino.toString(),
+        modifier = Modifier
+            .offset(0.dp,screenHeight-100.dp) //отступ для текстового поля в зависимости от номера мотора
+    )
     Image(
         bitmap = bitmapSrc?.asImageBitmap()!!,
         contentDescription = "Image",
@@ -258,7 +272,8 @@ private fun ArmRotation(
     var translateX = -440F
     var rangeUp = 790F
     var rangDown = -400F
-    var angle by remember { mutableStateOf( 0)}
+    //начальное значение для вывода в Text для угла arm
+    var angle by remember { mutableStateOf( if (armName.last().digitToInt()==1 || armName.last().digitToInt()==4) 50 else 100 )}
     when (armName) {
         "arm1"->  {
             transformOrigin = TransformOrigin(0.9f, 0.7f) //это определяет точку поворота, первый параметр по X, второй - по Y
@@ -286,6 +301,7 @@ private fun ArmRotation(
             rangDown = -400F
         }
     }
+    var armNumberForArduino = armName.last().digitToInt() - 1
     val state = rememberTransformableState { _, offsetChange, rotationChange ->
 //        scale *= zoomChange
         var temp = rotation
@@ -304,7 +320,7 @@ private fun ArmRotation(
 //        }
         println("rotation = $rotation  angle = $angle  rangDown = $rangDown  rangeUp = $rangeUp")
 //        angle = 180 -
-        var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
+//        var armNumberForArduino = armName.last().code - '0'.code - 1 //для строки "arm1" получаем число 0
 //        anglesArray[armNumberForArduino] = angle
         if (armNumberForArduino==2) armNumberForArduino = 3
         else if (armNumberForArduino==3) armNumberForArduino = 2
@@ -315,11 +331,16 @@ private fun ArmRotation(
 //        writeArmAngleToArduino()
 //        offset += offsetChange
     }
-    
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+    val textX = if (armNumberForArduino == 2 || armNumberForArduino == 3) screenWidth / 2 - 40.dp + 50.dp else  screenWidth / 2 - 40.dp
+    val textY = if (armNumberForArduino == 1 || armNumberForArduino == 3) (screenHeight / 2 + 20.dp) else screenHeight /2 - 50.dp
+            println("textX = $textX textY = $textY")
     Text(
         text = angle.toString(),
         modifier = Modifier
-            .offset(0.dp,(100*(armName.last().digitToInt()-1)).dp)
+            .offset(textX,textY) //отступ для текстового поля в зависимости от номера мотора
     )
     
     Image(
