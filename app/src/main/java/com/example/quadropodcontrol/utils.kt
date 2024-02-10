@@ -352,7 +352,7 @@ fun sendDataToBluetoothDevice(socket: BluetoothSocket, data: String) {
         val bytes = data.toByteArray()
         // Send the bytes to the device
         val outputStream = socket.outputStream
-        outputStream.write(bytes)
+        if (outputStream!=null) outputStream.write(bytes)
         // Close the socket
 //            socket.close()
     } catch (e: IOException) {
