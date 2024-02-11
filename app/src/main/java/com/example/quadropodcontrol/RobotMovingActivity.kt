@@ -33,24 +33,24 @@ class RobotMovingActivity : ComponentActivity() {
         setContent {
             var i = 0
             var currentDirection by  remember { mutableStateOf("0") }
-            this.lifecycleScope.launch {
-                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    // this block is automatically executed when moving into
-                    // the started state, and cancelled when stopping.
-                    while (true) {
-                        i++
-//                        println("$i second from coroutine")
-                        if ( currentDirection!="0") {
-                            val toArduino = "$currentDirection" + "\n"
-                            println("toArduino = $toArduino")
-                            if (BluetoothWork.currentSocket != null) {
-                                sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, toArduino)
-                            }
-                        }
-                        delay(500L)
-                    }
-                }
-            }
+//            this.lifecycleScope.launch {
+//                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                    // this block is automatically executed when moving into
+//                    // the started state, and cancelled when stopping.
+//                    while (true) {
+//                        i++
+////                        println("$i second from coroutine")
+//                        if ( currentDirection!="0") {
+//                            val toArduino = "$currentDirection" + "\n"
+//                            println("toArduino = $toArduino")
+//                            if (BluetoothWork.currentSocket != null) {
+//                                sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, toArduino)
+//                            }
+//                        }
+//                        delay(500L)
+//                    }
+//                }
+//            }
             QuadroPodControlTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -80,6 +80,7 @@ fun ControlBox(name: String, onDirectionChange: (x: String) -> Unit) {
     val innerCircleRadius = 150f
     val outerCircleRadius = 400f
     var currentDirection by  remember { mutableStateOf("0") }
+    var oldDirection by  remember { mutableStateOf("0") }
 
     Canvas(modifier = Modifier
         .fillMaxSize()
@@ -128,11 +129,21 @@ fun ControlBox(name: String, onDirectionChange: (x: String) -> Unit) {
         }
         if (circleX+innerCircleRadius+50 < canvasWidth / 2 ) currentDirection = "l"
         if (circleX-innerCircleRadius-50 > canvasWidth / 2 ) currentDirection = "r"
-        if (currentDirection!="0") {
-            println("currentDirection = $currentDirection")
-//            if (BluetoothWork.currentSocket!=null) sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$currentDirection"+"\n")
+        if (circleY+innerCircleRadius+50 < canvasHeight / 2 ) currentDirection = "f"
+        if (circleY-innerCircleRadius-50 > canvasHeight / 2 ) currentDirection = "b"
+        if (currentDirection!=oldDirection) {
+            val toArduino = if (currentDirection!="0") "$currentDirection" + "\n" else "s\n"
+            println("toArduino = $toArduino")
+            if (BluetoothWork.currentSocket != null) {
+                sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, toArduino)
+            }
+            oldDirection = currentDirection
         }
-        else println("stop")
+//        if (currentDirection!="0") {
+//            println("currentDirection = $currentDirection")
+//            if (BluetoothWork.currentSocket!=null) sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, "$currentDirection"+"\n")
+//        }
+//        else println("stop")
         onDirectionChange(currentDirection)
 //            lifecycleScope?.launch {
 //                lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {

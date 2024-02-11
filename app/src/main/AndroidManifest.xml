@@ -19,6 +19,7 @@
             android:name=".RobotMovingActivity"
             android:exported="false"
             android:label="@string/title_activity_robot_moving"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.QuadroPodControl" />
         <activity
             android:name=".ArmsAndLegsControlActivity"
@@ -30,6 +31,7 @@
             android:name=".MyLauncherActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.QuadroPodControl">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

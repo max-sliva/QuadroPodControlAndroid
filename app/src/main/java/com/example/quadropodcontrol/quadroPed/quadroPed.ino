@@ -6,7 +6,50 @@ Servo servos[8];
 int delayBetweenMoves = 200;
 
 void forward() {
-
+    //подготовка
+    servos[0].write(100);
+    servos[4].write(100);
+    servos[2].write(50);
+    servos[6].write(50);
+    delay(delayBetweenMoves);
+//legs 3 and 7 up
+    servos[3].write(120);
+    servos[7].write(120);
+    delay(delayBetweenMoves);
+//arms 2 and 6 forward
+    servos[2].write(100);
+    servos[6].write(5);
+    delay(delayBetweenMoves);
+    //legs 3 and 7 down
+    servos[3].write(155);
+    servos[7].write(155);
+    delay(delayBetweenMoves);
+//legs 1 and 5 up
+    servos[1].write(70);
+    servos[5].write(70);
+    delay(delayBetweenMoves);
+    servos[0].write(50);
+    servos[4].write(150);
+// arms 2 and 6 turn
+    servos[2].write(50);
+    servos[6].write(50);
+    delay(delayBetweenMoves);
+//legs 1 and 5 down
+    servos[1].write(35);
+    servos[5].write(35);
+    delay(delayBetweenMoves);
+    //legs 3 and 7 up
+    servos[3].write(120);
+    servos[7].write(120);
+    delay(delayBetweenMoves);
+    servos[0].write(100);
+    servos[4].write(100);
+    servos[2].write(50);
+    servos[6].write(50);
+    delay(delayBetweenMoves);
+//legs 3 and 7 down
+    servos[3].write(155);
+    servos[7].write(155);
 }
 
 void back() {
@@ -131,6 +174,7 @@ void servoCalibration() {
 }
 
 String message = "";
+String curMessage = "";
 
 void setup() {
     Serial.begin(9600);
@@ -162,19 +206,43 @@ void runCmd(String cmd) {  //ф-ия для разбора поступивше�
     if (cmd[0] >= '0' && cmd[0] <= '9') rotateServo(cmd);
     if (cmd[0] == 'f') forward();
     if (cmd[0] == 'b') back();
-    if (cmd[0] == 'l') turnLeft();
-    if (cmd[0] == 'r') turnRight();
+    if (cmd[0] == 'l') {
+      turnLeft();
+      // delay(100);
+    }
+    if (cmd[0] == 'r') {
+      turnRight();
+      // delay(100);
+    }
 }
-
+long time = millis();
 void loop() {
     if (Serial.available()) {
         char a = Serial.read();
         if (a == '\n') {
             // Serial.print("message = ");
             // Serial.println(message);
-            runCmd(message);
+            // runCmd(message);
+            curMessage = message;
             message = "";
         } else message += a;
     }
-    // put your main code here, to run repeatedly:
+    if (curMessage[0] >= '0' && curMessage[0] <= '9') runCmd(curMessage);
+    else if (millis() - time>=50) {
+      runCmd(curMessage);
+      time = millis();
+    }
+    // delay(50);
 }
+
+// void loop() {
+//     if (Serial.available()) {
+//         char a = Serial.read();
+//         if (a == '\n') {
+//             // Serial.print("message = ");
+//             // Serial.println(message);
+//             runCmd(message);
+//             message = "";
+//         } else message += a;
+//     }
+// }
