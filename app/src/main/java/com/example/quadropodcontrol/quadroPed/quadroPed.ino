@@ -1,5 +1,7 @@
 #include <Servo.h>
+#include "Eye.h"
 
+Eye *robotEyes;
 //номера сервомоторов   0  1  2  3   4  5  6  7
 int servoPins[] = {2, 3, 4, 5, 10, 7, 8, 9};
 Servo servos[8];
@@ -11,6 +13,7 @@ void forward() {
     servos[4].write(100);
     servos[2].write(50);
     servos[6].write(50);
+    robotEyes->lookForward();
     delay(delayBetweenMoves);
 //legs 3 and 7 up
     servos[3].write(120);
@@ -62,6 +65,7 @@ void turnLeft() {
     servos[4].write(100);
     servos[2].write(50);
     servos[6].write(50);
+    robotEyes->lookLeft();
     delay(delayBetweenMoves);
 //legs 1 and 5 up
     servos[1].write(70);
@@ -84,6 +88,7 @@ void turnLeft() {
     servos[4].write(100);
     delay(delayBetweenMoves);
 //legs 3 and 7 down
+    robotEyes->lookForward();
     servos[3].write(155);
     servos[7].write(155);
 }
@@ -94,6 +99,7 @@ void turnRight() {
     servos[4].write(100);
     servos[2].write(50);
     servos[6].write(50);
+    robotEyes->lookRight();
     delay(delayBetweenMoves);
 //legs 3 and 7 up
     servos[3].write(120);
@@ -116,8 +122,10 @@ void turnRight() {
     servos[6].write(50);
     delay(delayBetweenMoves);
 //legs 1 and 5 down
+    robotEyes->lookForward();
     servos[1].write(35);
     servos[5].write(35);
+    
 }
 
 
@@ -167,23 +175,44 @@ void servoCalibration() {
     // Serial.println("3-0");
     // servos[3].write(0);
     delay(2000);
+    // robotEyes->lookRight();
     turnRight();
-    delay(2000);
+    delay(1000);
+    // robotEyes->lookLeft();
     turnLeft();
-    delay(2000);
+    delay(1000);
+    // robotEyes->lookForward();
 }
 
 String message = "";
 String curMessage = "";
 
 void setup() {
+    // Eye robotEyes;
+    robotEyes = new Eye();
+    robotEyes->drawEyes();
     Serial.begin(9600);
+    Serial.println("Robot started!");
+    // delay(1000);
+    // robotEyes->lookRight();
+    // delay(1000);
+    // robotEyes->lookForward();
+    // delay(1000);
+    // robotEyes->lookLeft();
+    // delay(1000);
+    // robotEyes->lookForward();
+    // delay(1000);
+    // robotEyes->lookInside();
+    // delay(1000);
+    // robotEyes->lookForward();
+
     for (int i = 0; i < 8; i++) {
         pinMode(servoPins[i], OUTPUT);
         servos[i].attach(servoPins[i]);
     }
     delay(1000);
     servoCalibration();
+    robotEyes->lookForward();
     Serial.println("Servo ready!");
 }
 
