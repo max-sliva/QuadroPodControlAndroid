@@ -88,9 +88,9 @@ void turnLeft() {
     servos[4].write(100);
     delay(delayBetweenMoves);
 //legs 3 and 7 down
-    robotEyes->lookForward();
     servos[3].write(155);
     servos[7].write(155);
+    robotEyes->lookForward();
 }
 
 void turnRight() {
@@ -122,12 +122,28 @@ void turnRight() {
     servos[6].write(50);
     delay(delayBetweenMoves);
 //legs 1 and 5 down
-    robotEyes->lookForward();
     servos[1].write(35);
     servos[5].write(35);
+    robotEyes->lookForward();
     
 }
 
+void standStraight(){
+    servos[1].write(35); //35
+    servos[5].write(35);//35
+    servos[3].write(155); //155
+    servos[7].write(155);//155
+    //delay(2000);
+    //body servos along
+    // servos[0].write(120); //100
+    // servos[4].write(120);//100
+    // servos[2].write(60);//50
+    // servos[6].write(60);//50
+    servos[0].write(50); //50
+    servos[4].write(50);//50
+    servos[2].write(100);//100
+    servos[6].write(100);//100
+}
 
 void servoCalibration() {
     // servos[7].write(0);
@@ -211,7 +227,8 @@ void setup() {
         servos[i].attach(servoPins[i]);
     }
     delay(1000);
-    servoCalibration();
+    standStraight();
+    // servoCalibration();
     robotEyes->lookForward();
     Serial.println("Servo ready!");
 }
