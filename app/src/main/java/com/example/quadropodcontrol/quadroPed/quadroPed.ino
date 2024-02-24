@@ -8,7 +8,7 @@ Servo servos[8];
 int delayBetweenMoves = 200;
 
 
-void eyesMove(String *cmd){
+void eyesMove(String cmd){
     if (cmd=="eyesUp") robotEyes->lookUp();
     if (cmd=="eyesLeft") robotEyes->lookLeft();
     if (cmd=="eyesRight") robotEyes->lookRight();

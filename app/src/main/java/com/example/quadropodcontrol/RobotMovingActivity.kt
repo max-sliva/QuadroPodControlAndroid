@@ -94,6 +94,9 @@ fun EyesControlBox(
     val eyesList = mapOf("Top" to R.drawable.eyes_up, "Left" to R.drawable.eyes_left,
                          "Center" to R.drawable.eyes_center, "Right" to R.drawable.eyes_right, "Bottom" to R.drawable.eyes_down,
                          "Inner" to R.drawable.eyes_in, "Out" to R.drawable.eyes_out)
+    val toArduinoStrings = mapOf("Top" to "eyesUp", "Left" to "eyesLeft", "Right" to "eyesRight",
+                                 "Center" to "eyesForward", "Bottom" to "eyesDown", "Inner" to "eyesIn",
+                                 "Out" to "eyesOut")
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(140.dp)
@@ -106,6 +109,11 @@ fun EyesControlBox(
                         detectTapGestures(
                             onPress = {
                                 tappedEyes = eyeLocation
+//                                val toArduino = if (currentDirection != "0") "$currentDirection" + "\n" else "s\n"
+                                val toArduino = toArduinoStrings[eyeLocation] + "\n"
+                                if (BluetoothWork.currentSocket != null) {
+                                    sendDataToBluetoothDevice(BluetoothWork.currentSocket!!, toArduino)
+                                }
                             }
                         )
                     },
