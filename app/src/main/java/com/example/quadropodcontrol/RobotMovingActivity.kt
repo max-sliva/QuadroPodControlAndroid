@@ -64,23 +64,11 @@ class RobotMovingActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(), //заполняем всё доступное пространство
 //                        .border(BorderStroke(2.dp, Color.Blue)),
                         horizontalAlignment = Alignment.CenterHorizontally, //по центру горизонтально
-                        verticalArrangement = Arrangement.Center
+                        //verticalArrangement = Arrangement.Center
                     ) {
-//                        Text("This text is drawn last", modifier = Modifier.align(Alignment.Center))
-//                        Canvas(modifier = Modifier.align(Alignment.TopStart)
-//                        ){
-//                            val canvasWidth = size.width
-//                            val canvasHeight = size.height
-//                            drawControl(innerCircleRadius = 50f, outerCircleRadius = 200f, circleX = canvasWidth/2, circleY = canvasHeight / 2)
-//                        }
-//                        EyesControlBox("Eyes Moving", modifier = Modifier.align(Alignment.TopCenter)){ x-> currentDirection = x}
-//                        MovingControlBox("Robot Moving", modifier = Modifier.align(Alignment.Center)){ x-> currentDirection = x}
-                        Row(  modifier = Modifier.border(BorderStroke(2.dp, Color.Red))){
                             EyesControlBox("Eyes Moving"){ x-> currentDirection = x}
-                        }
-                        Row(modifier = Modifier.border(BorderStroke(2.dp, Color.Red))){
                             MovingControlBox("Robot Moving"){ x-> currentDirection = x}
-                        }
+
                     }
                 }
             }
@@ -91,31 +79,21 @@ class RobotMovingActivity : ComponentActivity() {
 @Composable
 fun EyesControlBox(
     name: String,
-//    modifier: Modifier,
-    onDirectionChange: (x: String) -> Unit) {
-//    Box(modifier = Modifier
-//        .border(BorderStroke(2.dp, Color.Red)))
-//    {
-//        Column(modifier = Modifier.wrapContentHeight()
-//            .border(BorderStroke(2.dp, Color.Yellow))
-//        ){
-            Canvas(
-                modifier = Modifier
-//        .wrapContentHeight()
-//        .fillMaxSize()
-            ) {
-                val canvasWidth = size.width
-                val canvasHeight = size.height
-                val outerRadius = 200f
-                drawControl(
-                    innerCircleRadius = 50f,
-                    outerCircleRadius = outerRadius,
-                    circleX = canvasWidth / 2,
-                    circleY = canvasHeight / 2
-                )
-            }
-//        }
-//    }
+    onDirectionChange: (x: String) -> Unit
+) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(140.dp)
+    ){
+        Text(text = "Top Center",
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+        Text(text = "Center Start", modifier = Modifier.align(Alignment.CenterStart))
+        Text(text = "Center", modifier = Modifier.align(Alignment.Center))
+        Text(text = "Center End", modifier = Modifier.align(Alignment.CenterEnd))
+        Text(text = "Bottom Center", modifier = Modifier.align(Alignment.BottomCenter))
+    }
+
 
 }
 
@@ -148,6 +126,7 @@ fun MovingControlBox(
 //            .fillMaxSize()
 //            .border(BorderStroke(2.dp, Color.Green))
 //            .wrapContentHeight()
+            .fillMaxHeight()
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { touch ->
