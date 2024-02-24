@@ -5,14 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,10 +24,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.quadropodcontrol.ui.theme.QuadroPodControlTheme
 import sendDataToBluetoothDevice
+import kotlin.math.pow
 import kotlin.math.sqrt
+
 
 class RobotMovingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +70,7 @@ class RobotMovingActivity : ComponentActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally, //по центру горизонтально
                         //verticalArrangement = Arrangement.Center
                     ) {
-                            EyesControlBox("Eyes Moving"){ x-> currentDirection = x}
+                            EyesControlBox("Eyes Moving")
                             MovingControlBox("Robot Moving"){ x-> currentDirection = x}
 
                     }
@@ -79,22 +83,38 @@ class RobotMovingActivity : ComponentActivity() {
 @Composable
 fun EyesControlBox(
     name: String,
-    onDirectionChange: (x: String) -> Unit
+//    onDirectionChange: (x: String) -> Unit
 ) {
+    var tappedEyes by remember {
+        mutableStateOf("Center")
+    }
+    val alingList = mapOf("Top" to Alignment.TopCenter, "Left" to Alignment.CenterStart,
+                          "Center" to Alignment.Center, "Right" to Alignment.CenterEnd, "Bottom" to Alignment.BottomCenter,
+                          "Inner" to Alignment.BottomStart, "Out" to Alignment.BottomEnd )
+    val eyesList = mapOf("Top" to R.drawable.eyes_up, "Left" to R.drawable.eyes_left,
+                         "Center" to R.drawable.eyes_center, "Right" to R.drawable.eyes_right, "Bottom" to R.drawable.eyes_down,
+                         "Inner" to R.drawable.eyes_in, "Out" to R.drawable.eyes_out)
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(140.dp)
     ){
-        Text(text = "Top Center",
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
-        Text(text = "Center Start", modifier = Modifier.align(Alignment.CenterStart))
-        Text(text = "Center", modifier = Modifier.align(Alignment.Center))
-        Text(text = "Center End", modifier = Modifier.align(Alignment.CenterEnd))
-        Text(text = "Bottom Center", modifier = Modifier.align(Alignment.BottomCenter))
+        eyesList.forEach { (eyeLocation, eyeImage) ->
+            Image(//нужен import androidx.compose.foundation.Image
+                  modifier = Modifier.align(alingList[eyeLocation]!!)
+                      .border(BorderStroke(2.dp, if (tappedEyes.contains(eyeLocation)) Color.Green else Color.White))
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                tappedEyes = eyeLocation
+                            }
+                        )
+                    },
+                  painter = painterResource(id = eyeImage), //указываем источник изображения
+                  contentDescription = "", //можно вставить описание изображения
+                  contentScale = ContentScale.Fit, //параметры масштабирования изображения
+            )
+        }
     }
-
-
 }
 
 @Composable
@@ -103,7 +123,7 @@ fun MovingControlBox(
 //    modifier: Modifier,
     onDirectionChange: (x: String) -> Unit) {
     var startPointX by remember { mutableStateOf(0f) }
-    var ratio by remember {   mutableStateOf(0f)     }
+//    var ratio by remember {   mutableStateOf(0f)     }
     var startPointY by remember { mutableStateOf(0f) }
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
@@ -118,14 +138,7 @@ fun MovingControlBox(
     var currentDirection by  remember { mutableStateOf("0") }
     var oldDirection by  remember { mutableStateOf("0") }
 
-//    Box(modifier = Modifier
-//        .border(BorderStroke(2.dp, Color.Green))
-//
-//    ){
         Canvas(modifier = Modifier
-//            .fillMaxSize()
-//            .border(BorderStroke(2.dp, Color.Green))
-//            .wrapContentHeight()
             .fillMaxHeight()
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -141,10 +154,7 @@ fun MovingControlBox(
                         offsetX += dragAmount.x
                         offsetY += dragAmount.y
                         val dist = sqrt(
-                            Math.pow(
-                                (circleXStart - circleX).toDouble(),
-                                2.0
-                            ) + Math.pow((circleYStart - circleY).toDouble(), 2.0)
+                            (circleXStart - circleX).toDouble().pow(2.0) + (circleYStart - circleY).toDouble().pow(2.0)
                         )
                         if (dist + innerCircleRadius < outerCircleRadius) {
                             oldCircleX = circleX

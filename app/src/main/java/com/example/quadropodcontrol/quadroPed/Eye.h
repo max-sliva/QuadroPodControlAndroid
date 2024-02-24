@@ -117,6 +117,20 @@ public:
     display.update();
   }
 
+  void lookOutside(){
+    drawLeftEye(LOOK_RIGHT);
+    drawRightEye(LOOK_LEFT);
+    //display.display();
+    display.update();
+  }
+  void lookUp(){
+
+  }
+
+  void lookDown(){
+
+  }
+
   void drawEyes() {
     lookForward();
   }

@@ -7,6 +7,17 @@ int servoPins[] = {2, 3, 4, 5, 10, 7, 8, 9};
 Servo servos[8];
 int delayBetweenMoves = 200;
 
+
+void eyesMove(String *cmd){
+    if (cmd=="eyesUp") robotEyes->lookUp();
+    if (cmd=="eyesLeft") robotEyes->lookLeft();
+    if (cmd=="eyesRight") robotEyes->lookRight();
+    if (cmd=="eyesForward") robotEyes->lookForward();
+    if (cmd=="eyesDown") robotEyes->lookDown();
+    if (cmd=="eyesIn") robotEyes->lookInside();
+    if (cmd=="eyesOut") robotEyes->lookOutside();
+}
+
 void forward() {
     //подготовка
     servos[0].write(100);
@@ -259,6 +270,9 @@ void runCmd(String cmd) {  //ф-ия для разбора поступивше�
     if (cmd[0] == 'r') {
       turnRight();
       // delay(100);
+    }
+    if (cmd[0] == 'e'){
+        eyesMove(cmd);
     }
 }
 long time = millis();
