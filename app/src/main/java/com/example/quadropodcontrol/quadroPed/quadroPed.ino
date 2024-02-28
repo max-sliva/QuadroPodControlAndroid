@@ -5,7 +5,7 @@ Eye *robotEyes;
 //номера сервомоторов   0  1  2  3   4  5  6  7
 int servoPins[] = {2, 3, 4, 5, 10, 7, 8, 9};
 Servo servos[8];
-int delayBetweenMoves = 200;
+int delayBetweenMoves = 100;
 
 
 void eyesMove(String cmd){

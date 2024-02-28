@@ -16,7 +16,9 @@ class Eye {
 private:
   enum { FORWARD,
          LOOK_RIGHT,
-        LOOK_LEFT } eyesLook;
+        LOOK_LEFT,
+        LOOK_UP,
+        LOOK_DOWN } eyesLook;
 
  // Adafruit_SSD1306 display;
   // OLED  display;
@@ -67,6 +69,22 @@ private:
       clearCircle(x+r/2, y, r / 2);
       display.drawCircle(x + r / 2, y, r / 6);
       fillCircle(x+r/2, y, r / 6);
+    }
+    if (look == LOOK_UP) {
+    //   display.fillCircle(x + r / 2, y, r / 2, BLACK);
+    //   display.fillCircle(x + r / 2, y, r / 6, WHITE);
+      display.drawCircle(x, y- r / 2, r / 2);
+      clearCircle(x, y - r / 2, r / 2);
+      display.drawCircle(x, y - r / 2, r / 6);
+      fillCircle(x, y - r / 2, r / 6);
+    }
+    if (look == LOOK_DOWN) {
+    //   display.fillCircle(x + r / 2, y, r / 2, BLACK);
+    //   display.fillCircle(x + r / 2, y, r / 6, WHITE);
+      display.drawCircle(x, y+ r / 2, r / 2);
+      clearCircle(x, y + r / 2, r / 2);
+      display.drawCircle(x, y + r / 2, r / 6);
+      fillCircle(x, y + r / 2, r / 6);
     }
     // display.fillRect(x - r, y - r, 2 * r, r / 4, BLACK);
     // display.fillRect(x - r, y + r * 3 / 4, 2 * r, r / 2, BLACK);
@@ -123,12 +141,19 @@ public:
     //display.display();
     display.update();
   }
-  void lookUp(){
 
+  void lookUp(){
+    drawLeftEye(LOOK_UP);
+    drawRightEye(LOOK_UP);
+    //display.display();
+    display.update();
   }
 
   void lookDown(){
-
+    drawLeftEye(LOOK_DOWN);
+    drawRightEye(LOOK_DOWN);
+    //display.display();
+    display.update();
   }
 
   void drawEyes() {
